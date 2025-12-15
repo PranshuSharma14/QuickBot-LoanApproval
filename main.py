@@ -1,0 +1,108 @@
+"""
+Advanced Main FastAPI application for Agentic AI Loan Sales Assistant
+An Indian NBFC loan processing system with sophisticated multi-agent orchestration
+"""
+
+from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, JSONResponse
+from contextlib import asynccontextmanager
+import uvicorn
+import os
+
+from app.database.database import init_db
+from app.api import chat, dummy_apis
+from app.models.schemas import ChatMessage, ChatResponse
+from app.agents.master_agent import MasterAgent
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize database and master agent on startup"""
+    # Initialize database
+    init_db()
+    
+    # Initialize master agent
+    app.state.master_agent = MasterAgent()
+    
+    print("🚀 NBFC Agentic AI Loan Sales Assistant is ready!")
+    yield
+    
+    print("👋 Shutting down...")
+
+
+# Initialize FastAPI app with advanced configuration
+app = FastAPI(
+    title="Advanced Agentic AI Loan Sales Assistant",
+    description="AI-powered loan processing system with sophisticated multi-agent orchestration for Indian NBFC",
+    version="2.0.0",
+    lifespan=lifespan,
+    docs_url="/api/docs",
+    redoc_url="/api/redoc"
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # React dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Mount static files
+app.mount("/generated", StaticFiles(directory="generated"), name="generated")
+
+# Include routers
+app.include_router(chat.router, prefix="/api", tags=["Chat"])
+app.include_router(dummy_apis.router, prefix="/api", tags=["External APIs"])
+
+
+@app.get("/api/download-sanction-letter/{session_id}")
+async def download_sanction_letter(session_id: str):
+    """Download sanction letter PDF for a session"""
+    import glob
+    
+    # Find PDF file for this session
+    pattern = f"generated/sanction_letter_{session_id[:8]}*.pdf"
+    files = glob.glob(pattern)
+    
+    if not files:
+        raise HTTPException(status_code=404, detail="Sanction letter not found")
+    
+    # Get the most recent file if multiple exist
+    latest_file = max(files, key=os.path.getctime)
+    
+    return FileResponse(
+        path=latest_file,
+        media_type="application/pdf",
+        filename=f"QuickLoan_Sanction_Letter.pdf"
+    )
+
+
+@app.get("/")
+async def root():
+    """Health check endpoint"""
+    return {
+        "message": "NBFC Agentic AI Loan Sales Assistant is running",
+        "status": "active",
+        "version": "1.0.0",
+        "workflow": [
+            "1. Greeting",
+            "2. Sales & Requirements",
+            "3. KYC Verification",
+            "4. Credit Underwriting",
+            "5. Approval/Rejection",
+            "6. Sanction Letter"
+        ]
+    }
+
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host="127.0.0.1",
+        port=8000,
+        reload=False
+    )
