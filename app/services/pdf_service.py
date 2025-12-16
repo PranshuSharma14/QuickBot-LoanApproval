@@ -138,13 +138,13 @@ class PDFService:
         
         # Loan details table
         loan_table_data = [
-            ["Loan Amount Sanctioned", f"₹ {loan_details.loan_amount:,.0f}"],
+            ["Loan Amount Sanctioned", f"Rs.{loan_details.loan_amount:,.0f}"],
             ["Interest Rate", f"{loan_details.interest_rate}% per annum"],
             ["Loan Tenure", f"{loan_details.tenure} months"],
-            ["EMI Amount", f"₹ {loan_details.emi:,.0f}"],
-            ["Processing Fee", f"₹ {processing_fee:,.0f}"],
-            ["Documentation Charges", f"₹ {documentation_charges:,.0f}"],
-            ["Amount to be Disbursed", f"₹ {disbursement_amount:,.0f}"],
+            ["EMI Amount", f"Rs.{loan_details.emi:,.0f}"],
+            ["Processing Fee", f"Rs.{processing_fee:,.0f}"],
+            ["Documentation Charges", f"Rs.{documentation_charges:,.0f}"],
+            ["Amount to be Disbursed", f"Rs.{disbursement_amount:,.0f}"],
             ["First EMI Due Date", (datetime.now() + timedelta(days=30)).strftime("%d %B, %Y")],
         ]
         
@@ -178,7 +178,7 @@ class PDFService:
         story.append(Spacer(1, 15))
         
         # Required documents
-        story.append(Paragraph("Documents Required for Disbursement:", header_style))
+        story.append(Paragraph("\n\nDocuments Required for Disbursement:", header_style))
         
         documents = """
         • Signed loan agreement<br/>

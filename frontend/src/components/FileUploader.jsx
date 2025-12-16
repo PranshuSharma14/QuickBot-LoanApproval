@@ -27,22 +27,25 @@ const FileUploader = ({ onUpload }) => {
       animate={{ opacity: 1, scale: 1 }}
       className="w-full"
     >
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-slate-800 mb-2">Upload Salary Slip</h3>
-        <p className="text-sm text-slate-600">
-          Please upload your latest salary slip to continue with the loan approval process.
+      <div className="mb-3 text-center">
+        <h3 className="text-lg font-bold text-slate-800 mb-1 flex items-center justify-center gap-2">
+          <FileText className="w-5 h-5 text-primary-500" />
+          Upload Salary Slip
+        </h3>
+        <p className="text-xs text-slate-600">
+          Upload your latest salary slip to continue
         </p>
       </div>
 
       <div
         {...getRootProps()}
         className={`
-          relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300
+          relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-300 shadow-sm
           ${isDragActive && !isDragReject 
-            ? 'border-primary-400 bg-primary-50' 
+            ? 'border-primary-400 bg-primary-50 shadow-md' 
             : isDragReject 
               ? 'border-red-400 bg-red-50'
-              : 'border-slate-300 bg-slate-50 hover:border-primary-300 hover:bg-primary-25'
+              : 'border-slate-300 bg-white hover:border-primary-300 hover:bg-primary-25 hover:shadow-md'
           }
         `}
       >
@@ -56,15 +59,15 @@ const FileUploader = ({ onUpload }) => {
           transition={{ type: "spring", stiffness: 300 }}
         >
           {isDragReject ? (
-            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
           ) : (
-            <Upload className={`w-12 h-12 mx-auto mb-4 ${
+            <Upload className={`w-10 h-10 mx-auto mb-3 ${
               isDragActive ? 'text-primary-500' : 'text-slate-400'
             }`} />
           )}
           
-          <div className="space-y-2">
-            <p className={`text-lg font-medium ${
+          <div className="space-y-1">
+            <p className={`text-base font-medium ${
               isDragReject 
                 ? 'text-red-600' 
                 : isDragActive 

@@ -2,9 +2,58 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { User, Bot, CheckCircle, XCircle } from 'lucide-react'
 
-const ChatMessage = ({ message, index }) => {
+const ChatMessage = ({ message, index, onOptionClick }) => {
   const isUser = message.sender === 'user'
   const isError = message.isError
+
+  // Function to highlight important parts of the message
+  const formatMessage = (text) => {
+    if (isUser) return text
+
+    // Highlight loan approval
+    if (text.includes('LOAN APPROVED') || text.includes('CONGRATULATIONS')) {
+      return text.split('\n').map((line, i) => {
+        if (line.includes('LOAN APPROVED') || line.includes('CONGRATULATIONS')) {
+          return (
+            <div key={i} className="text-xl font-bold text-green-600 mb-2 animate-pulse">
+              {line}
+            </div>
+          )
+        }
+        return <div key={i}>{line}</div>
+      })
+    }
+
+    // Highlight loan rejection
+    if (text.includes('cannot approve') || text.includes('Unfortunately')) {
+      return text.split('\n').map((line, i) => {
+        if (line.includes('cannot approve') || line.includes('Unfortunately')) {
+          return (
+            <div key={i} className="text-lg font-bold text-red-600 mb-2">
+              {line}
+            </div>
+          )
+        }
+        return <div key={i}>{line}</div>
+      })
+    }
+
+    // Highlight salary slip request
+    if (text.includes('salary slip') || text.includes('verify your current salary')) {
+      return text.split('\n').map((line, i) => {
+        if (line.includes('salary slip') || line.includes('verify your current salary')) {
+          return (
+            <div key={i} className="text-base font-semibold text-blue-600 mb-1">
+              {line}
+            </div>
+          )
+        }
+        return <div key={i}>{line}</div>
+      })
+    }
+
+    return text
+  }
 
   return (
     <motion.div
@@ -51,7 +100,7 @@ const ChatMessage = ({ message, index }) => {
         >
           {/* Message Text */}
           <div className={`whitespace-pre-wrap text-sm leading-relaxed ${isUser ? 'text-white' : ''}`}>
-            {message.text}
+            {formatMessage(message.text)}
           </div>
 
           {/* Options */}
@@ -63,11 +112,11 @@ const ChatMessage = ({ message, index }) => {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 + idx * 0.1 }}
-                  className="block w-full text-left px-3 py-2 bg-slate-50 hover:bg-slate-100 rounded-lg text-sm transition-colors border border-slate-200"
+                  className="block w-full text-left px-3 py-2 bg-slate-50 hover:bg-primary-50 rounded-lg text-sm transition-colors border border-slate-200 hover:border-primary-300 hover:shadow-sm cursor-pointer"
                   onClick={() => {
-                    // Handle option selection
-                    const event = new CustomEvent('optionSelected', { detail: option })
-                    window.dispatchEvent(event)
+                    if (onOptionClick) {
+                      onOptionClick(option)
+                    }
                   }}
                 >
                   {option}
@@ -77,7 +126,7 @@ const ChatMessage = ({ message, index }) => {
           )}
 
           {/* Success Indicator for Approved Messages */}
-          {message.text.toLowerCase().includes('approved') && !isUser && (
+          {message.final === true &&message.stage === 'completed' &&message.text.startsWith('🎉') && !isUser && (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}

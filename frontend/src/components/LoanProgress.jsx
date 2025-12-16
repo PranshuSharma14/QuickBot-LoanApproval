@@ -1,8 +1,8 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Check, Circle } from 'lucide-react'
+import { Check, Circle, X } from 'lucide-react'
 
-const LoanProgress = ({ currentStage }) => {
+const LoanProgress = ({ currentStage, isRejected }) => {
   const stages = [
     { name: 'Welcome', description: 'Getting started' },
     { name: 'Requirements', description: 'Loan details' },
@@ -11,6 +11,8 @@ const LoanProgress = ({ currentStage }) => {
     { name: 'Decision', description: 'Loan approval' },
     { name: 'Complete', description: 'Sanction letter' }
   ]
+
+  console.log('LoanProgress - currentStage:', currentStage, 'isRejected:', isRejected)
 
   return (
     <motion.div
@@ -28,14 +30,26 @@ const LoanProgress = ({ currentStage }) => {
                 animate={{ scale: 1 }}
                 transition={{ delay: index * 0.1 }}
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                  index < currentStage
+                  isRejected && index === 4
+                    ? 'bg-red-500 text-white shadow-lg ring-4 ring-red-200'
+                    : isRejected && index > 4
+                    ? 'bg-slate-200 text-slate-400'
+                    : index <= currentStage && currentStage === 5 && index === 5
+                    ? 'bg-accent-500 text-white shadow-lg'
+                    : index < currentStage
                     ? 'bg-accent-500 text-white shadow-lg'
                     : index === currentStage
                       ? 'bg-primary-500 text-white shadow-lg ring-4 ring-primary-200'
                       : 'bg-slate-200 text-slate-400'
                 }`}
               >
-                {index < currentStage ? (
+                {isRejected && index === 4 ? (
+                  <X className="w-5 h-5" />
+                ) : isRejected && index > 4 ? (
+                  <Circle className="w-4 h-4" />
+                ) : !isRejected && (index < currentStage || (index === currentStage && currentStage < 5) || (index <= currentStage && currentStage === 5)) ? (
+                  <Check className="w-5 h-5" />
+                ) : isRejected && index < 4 ? (
                   <Check className="w-5 h-5" />
                 ) : (
                   <Circle className="w-4 h-4" />
@@ -45,12 +59,16 @@ const LoanProgress = ({ currentStage }) => {
               {/* Stage Label */}
               <div className="mt-2 text-center">
                 <p className={`text-xs font-medium ${
-                  index <= currentStage ? 'text-slate-700' : 'text-slate-400'
+                  isRejected && index === 4
+                    ? 'text-red-600'
+                    : index <= currentStage ? 'text-slate-700' : 'text-slate-400'
                 }`}>
                   {stage.name}
                 </p>
                 <p className={`text-xs ${
-                  index <= currentStage ? 'text-slate-500' : 'text-slate-400'
+                  isRejected && index === 4
+                    ? 'text-red-500'
+                    : index <= currentStage ? 'text-slate-500' : 'text-slate-400'
                 }`}>
                   {stage.description}
                 </p>
@@ -62,11 +80,11 @@ const LoanProgress = ({ currentStage }) => {
               <div className="flex-1 h-0.5 mx-4 mt-[-20px]">
                 <motion.div
                   initial={{ scaleX: 0 }}
-                  animate={{ scaleX: index < currentStage ? 1 : 0 }}
+                  animate={{ scaleX: (index < currentStage && !(isRejected && index >= 4)) ? 1 : 0 }}
                   transition={{ duration: 0.5, delay: index * 0.2 }}
                   className="h-full bg-accent-300 origin-left"
                 />
-                <div className={`h-full ${index < currentStage ? 'bg-transparent' : 'bg-slate-200'}`} />
+                <div className={`h-full ${(index < currentStage && !(isRejected && index >= 4)) ? 'bg-transparent' : 'bg-slate-200'}`} />
               </div>
             )}
           </div>
@@ -84,7 +102,11 @@ const LoanProgress = ({ currentStage }) => {
             initial={{ width: 0 }}
             animate={{ width: `${(currentStage / (stages.length - 1)) * 100}%` }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
-            className="h-2 bg-gradient-to-r from-primary-500 to-accent-500 rounded-full"
+            className={`h-2 rounded-full ${
+              isRejected 
+                ? 'bg-gradient-to-r from-red-500 to-red-400'
+                : 'bg-gradient-to-r from-primary-500 to-accent-500'
+            }`}
           />
         </div>
       </div>

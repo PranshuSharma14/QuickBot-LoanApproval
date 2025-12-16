@@ -116,7 +116,7 @@ def init_db():
                 ),
                 Customer(
                     phone="9876543214",
-                    name="Vikram Singh",
+                    name="Vikash Singh",
                     address="654 Sector 15, Gurgaon, Haryana 122001",
                     pan="WXYZ7890A",
                     salary=120000
