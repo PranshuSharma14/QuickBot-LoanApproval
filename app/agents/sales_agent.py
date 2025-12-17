@@ -6,6 +6,7 @@ import re
 from typing import Optional
 from app.agents.base_agent import BaseAgent
 from app.models.schemas import ConversationContext, ChatResponse, ChatStage, LoanRequest, LoanPurpose
+from app.utils.ai_helper import AIHelper
 
 
 class SalesAgent(BaseAgent):
@@ -13,6 +14,7 @@ class SalesAgent(BaseAgent):
     
     def __init__(self):
         super().__init__("Sales Agent")
+        self.ai_helper = AIHelper()
         self.loan_purposes = {
             "1": LoanPurpose.PERSONAL,
             "2": LoanPurpose.HOME_IMPROVEMENT,
@@ -27,8 +29,35 @@ class SalesAgent(BaseAgent):
     async def process(self, message: str, context: ConversationContext) -> ChatResponse:
         """Process sales-related messages and collect loan requirements"""
         
-        # If we don't have loan amount yet
+        # Check if user is confirming a typo correction (yes/no response)
+        message_lower = message.lower().strip()
         if not context.loan_request or not context.loan_request.amount:
+            # Check if this is a confirmation to a previous amount with typo
+            if message_lower in ['yes', 'yeah', 'yup', 'correct', 'right', 'ok', 'okay', 'confirm']:
+                # Check if there's a pending amount in metadata
+                if hasattr(context, 'metadata') and context.metadata and 'pending_amount' in context.metadata:
+                    amount = context.metadata['pending_amount']
+                    if not context.loan_request:
+                        context.loan_request = LoanRequest(amount=amount)
+                    else:
+                        context.loan_request.amount = amount
+                    
+                    # Clear pending amount
+                    del context.metadata['pending_amount']
+                    
+                    amount_in_words = self._amount_in_words(amount)
+                    return self._generate_response(
+                        session_id=context.session_id,
+                        message=f"Great! ✅ {amount_in_words} (₹{amount:,.0f}) confirmed.\n\n"
+                               f"Now, let me ask about the repayment period. "
+                               f"What tenure would work best for you? "
+                               f"We offer flexible options from 6 months to 7 years.\n\n"
+                               f"Longer tenure = Lower monthly EMI\n"
+                               f"Shorter tenure = Less total interest\n\n"
+                               f"What would you prefer?",
+                        stage=ChatStage.SALES
+                    )
+            
             return await self._collect_loan_amount(message, context)
         
         # If we don't have tenure yet
@@ -53,25 +82,20 @@ class SalesAgent(BaseAgent):
         )
     
     async def _collect_loan_amount(self, message: str, context: ConversationContext) -> ChatResponse:
-        """Collect loan amount from user"""
+        """Collect loan amount from user with AI assistance"""
         
-        # Handle edge cases - user asks questions instead of providing amount
-        clarification_keywords = ['what', 'how much', 'minimum', 'maximum', 'range', 'limit', 'can i get']
-        if any(keyword in message.lower() for keyword in clarification_keywords) and len(message.split()) < 15:
-            return self._generate_response(
-                session_id=context.session_id,
-                message="Great question! Here are our loan amount options:\n\n"
-                       "💰 **Minimum**: ₹10,000\n"
-                       "💰 **Maximum**: ₹50,00,000\n\n"
-                       "The exact amount you qualify for depends on your credit score and income.\n\n"
-                       "How much do you need? Just tell me the amount!",
-                stage=ChatStage.SALES
-            )
-        
-        # Try to extract amount from message
+        # First check if message is a plain number (potential loan amount)
+        # This prevents valid amounts from being flagged as gibberish
         amount = self._extract_amount(message)
+        if not amount:
+            # Try AI extraction as well
+            amount = self.ai_helper.extract_loan_amount(message)
         
+        # If we found a valid amount, skip intent analysis and process it directly
         if amount:
+            # Check for typos before accepting the amount
+            has_typo, corrected_text = self._detect_typo(message)
+            
             if amount < 10000:
                 return self._generate_response(
                     session_id=context.session_id,
@@ -87,27 +111,89 @@ class SalesAgent(BaseAgent):
                     stage=ChatStage.SALES
                 )
             else:
-                # Valid amount, store it
+                # Check if there's a typo and ask for confirmation
+                if has_typo:
+                    amount_in_words = self._amount_in_words(amount)
+                    
+                    # Store pending amount in context metadata for confirmation
+                    if not hasattr(context, 'metadata') or context.metadata is None:
+                        context.metadata = {}
+                    context.metadata['pending_amount'] = amount
+                    
+                    return self._generate_response(
+                        session_id=context.session_id,
+                        message=f"I noticed a small typo in your message 😊\n\n"
+                               f"You typed: *{message}*\n"
+                               f"Did you mean: *{corrected_text}*?\n\n"
+                               f"I understand you need {amount_in_words} (₹{amount:,.0f}). Is that correct?\n\n"
+                               f"Reply 'yes' to confirm or type the correct amount.",
+                        stage=ChatStage.SALES
+                    )
+                
+                # No typo, proceed normally
                 if not context.loan_request:
                     context.loan_request = LoanRequest(amount=amount)
                 else:
                     context.loan_request.amount = amount
                 
+                # Smart response acknowledging understanding
+                amount_in_words = self._amount_in_words(amount)
+                
                 return self._generate_response(
                     session_id=context.session_id,
-                    message=f"Excellent! ₹{amount:,.0f} is a great choice. "
-                           f"Now, what repayment tenure would work best for you? "
-                           f"We offer flexible options from 6 months to 7 years (84 months). "
-                           f"Longer tenure means lower EMI. What would you prefer?",
+                    message=f"Perfect! I understand you need {amount_in_words} (₹{amount:,.0f}) 👍\n\n"
+                           f"That's a great amount for your financial needs. "
+                           f"Now, let me ask about the repayment period. "
+                           f"What tenure would work best for you? "
+                           f"We offer flexible options from 6 months to 7 years.\n\n"
+                           f"Longer tenure = Lower monthly EMI\n"
+                           f"Shorter tenure = Less total interest\n\n"
+                           f"What would you prefer?",
                     stage=ChatStage.SALES
                 )
-        else:
+        
+        # No valid amount found, use AI to understand intent
+        intent_analysis = self.ai_helper.understand_intent(message, 'sales')
+        
+        # Handle random/gibberish messages
+        if intent_analysis.get('is_random') or intent_analysis['intent'] == 'random_gibberish':
             return self._generate_response(
                 session_id=context.session_id,
-                message="I'd love to help you with the perfect loan amount! Could you tell me how much you need? "
-                       "We offer personal loans from ₹10,000 to ₹50,00,000. What amount would work for you?",
+                message="I didn't quite understand that! 😊 Let me help you - how much loan amount do you need?\n\n"
+                       "You can say:\n"
+                       "• '5 lakhs' or '5L'\n"
+                       "• '50000' or '50k'\n"
+                       "• 'I need 2 lakh rupees'\n\n"
+                       "We offer loans from ₹10,000 to ₹50,00,000.",
                 stage=ChatStage.SALES
             )
+        
+        # Handle questions
+        if intent_analysis['intent'] == 'ask_question':
+            ai_response = self.ai_helper.generate_contextual_response(
+                message, intent_analysis, 'sales', {}
+            )
+            return self._generate_response(
+                session_id=context.session_id,
+                message=ai_response + "\n\nNow, how much loan amount do you need?",
+                stage=ChatStage.SALES
+            )
+        
+        # Handle greetings during amount collection
+        if intent_analysis['intent'] == 'greeting':
+            return self._generate_response(
+                session_id=context.session_id,
+                message="Hello again! 👋 Let's continue with your loan application. How much loan amount do you need?",
+                stage=ChatStage.SALES
+            )
+        
+        # If we reach here, no valid amount was found
+        return self._generate_response(
+            session_id=context.session_id,
+            message="I'd love to help you with the perfect loan amount! Could you tell me how much you need? "
+                   "We offer personal loans from ₹10,000 to ₹50,00,000. What amount would work for you?",
+            stage=ChatStage.SALES
+        )
     
     async def _collect_tenure(self, message: str, context: ConversationContext) -> ChatResponse:
         """Collect loan tenure from user"""
@@ -235,6 +321,59 @@ class SalesAgent(BaseAgent):
         
         return None
     
+    def _detect_typo(self, message: str) -> tuple[bool, str]:
+        """
+        Detect common typos in loan amount messages
+        Returns (has_typo: bool, corrected_message: str)
+        """
+        typo_map = {
+            'laksh': 'lakh',
+            'laskh': 'lakh',
+            'laks': 'lakh',
+            'lakhs': 'lakhs',
+            'lacs': 'lakh',
+            'lacs': 'lakh',
+            'crore': 'crore',
+            'cror': 'crore',
+            'crores': 'crores',
+            'crors': 'crores'
+        }
+        
+        message_lower = message.lower()
+        corrected = message
+        has_typo = False
+        
+        for typo, correct in typo_map.items():
+            # Skip if it's already correct
+            if typo == correct or typo == correct + 's':
+                continue
+                
+            # Check for the typo in the message
+            pattern = r'\b' + re.escape(typo) + r'\b'
+            if re.search(pattern, message_lower, re.IGNORECASE):
+                has_typo = True
+                # Preserve case in correction
+                corrected = re.sub(pattern, correct, corrected, flags=re.IGNORECASE)
+        
+        return has_typo, corrected
+    
+    def _amount_in_words(self, amount: int) -> str:
+        """Convert amount to words (Indian format)"""
+        if amount >= 10000000:  # 1 crore or more
+            crores = amount / 10000000
+            if crores == int(crores):
+                return f"{int(crores)} crore" if crores == 1 else f"{int(crores)} crores"
+            return f"{crores:.1f} crores"
+        elif amount >= 100000:  # 1 lakh or more
+            lakhs = amount / 100000
+            if lakhs == int(lakhs):
+                return f"{int(lakhs)} lakh" if lakhs == 1 else f"{int(lakhs)} lakhs"
+            return f"{lakhs:.1f} lakhs"
+        elif amount >= 1000:  # thousands
+            return f"₹{amount:,}"
+        else:
+            return f"₹{amount}"
+    
     def _extract_tenure(self, message: str) -> Optional[int]:
         """Extract tenure from message"""
         # Look for numbers followed by months/years
@@ -259,10 +398,15 @@ class SalesAgent(BaseAgent):
     def _extract_purpose(self, message: str) -> Optional[LoanPurpose]:
         """Extract loan purpose from message"""
         message_lower = message.lower()
+        message_stripped = message.strip()
         
-        # Check for number selection
+        # Check for number selection (exact match or within message)
         for num, purpose in self.loan_purposes.items():
-            if num in message or str(int(num)) in message:
+            # Check if the message is just the number
+            if message_stripped == num:
+                return purpose
+            # Check if number appears in message with word boundaries
+            if re.search(r'\b' + num + r'\b', message):
                 return purpose
         
         # Check for keyword matching

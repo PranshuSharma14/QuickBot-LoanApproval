@@ -4,10 +4,12 @@ Uses SQLite for simplicity with dummy customer data
 """
 
 from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from datetime import datetime
+from sqlalchemy.orm import declarative_base, sessionmaker
+from datetime import datetime, timezone
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Database URL
 DATABASE_URL = "sqlite:///./loan_assistant.db"
@@ -32,7 +34,7 @@ class Customer(Base):
     address = Column(String)
     pan = Column(String, unique=True)
     salary = Column(Float)  # Monthly salary in INR
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class LoanApplication(Base):
@@ -50,8 +52,8 @@ class LoanApplication(Base):
     emi = Column(Float)
     interest_rate = Column(Float)
     sanction_letter_path = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 
 class ChatSession(Base):
@@ -64,8 +66,8 @@ class ChatSession(Base):
     current_stage = Column(String, default="greeting")  # greeting, sales, verification, underwriting, decision
     context = Column(String)  # JSON string of conversation context
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 
 def get_db():
@@ -161,9 +163,11 @@ def init_db():
             for customer in dummy_customers:
                 db.add(customer)
             db.commit()
+            logger.info("✅ Initialized database with 10 dummy customers")
             print("✅ Initialized database with 10 dummy customers")
     
     except Exception as e:
+        logger.error(f"❌ Error initializing database: {e}", exc_info=True)
         print(f"❌ Error initializing database: {e}")
         db.rollback()
     finally:

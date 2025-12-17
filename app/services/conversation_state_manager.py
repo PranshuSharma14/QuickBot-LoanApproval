@@ -5,13 +5,16 @@ Manages conversation state, context persistence, and intelligent transitions
 
 from typing import Dict, Any, List, Optional, Tuple
 from enum import Enum
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 import asyncio
 from dataclasses import dataclass, asdict
 import uuid
+import logging
 
 from app.models.schemas import ConversationContext, ChatStage
+
+logger = logging.getLogger(__name__)
 
 
 class StateTransition(Enum):
@@ -52,6 +55,9 @@ class ConversationStateManager:
     def __init__(self):
         # Active conversations
         self.active_conversations: Dict[str, ConversationContext] = {}
+        
+        # Thread-safety lock
+        self._lock = asyncio.Lock()
         
         # State history for each conversation
         self.state_history: Dict[str, List[StateSnapshot]] = {}
@@ -144,8 +150,9 @@ class ConversationStateManager:
     async def initialize_conversation(self, session_id: Optional[str] = None) -> ConversationContext:
         """Initialize a new conversation with proper state management"""
         
-        if session_id is None:
-            session_id = str(uuid.uuid4())
+        async with self._lock:
+            if session_id is None:
+                session_id = str(uuid.uuid4())
         
         # Create new conversation context
         context = ConversationContext(
@@ -159,8 +166,8 @@ class ConversationStateManager:
         # Add state management metadata
         context.metadata = {
             "conversation_state": ConversationState.ACTIVE,
-            "start_time": datetime.now(),
-            "last_activity": datetime.now(),
+            "start_time": datetime.now(timezone.utc),
+            "last_activity": datetime.now(timezone.utc),
             "transition_count": 0,
             "escalation_flags": [],
             "user_satisfaction_indicators": [],
@@ -191,28 +198,29 @@ class ConversationStateManager:
         Returns (success, message)
         """
         
-        if session_id not in self.active_conversations:
-            return False, "Conversation not found"
-        
-        context = self.active_conversations[session_id]
-        current_stage = context.current_stage
-        
-        # Validate transition
-        transition_valid, validation_message = await self._validate_transition(
-            current_stage, new_stage, transition_type, context
-        )
-        
-        if not transition_valid:
-            return False, validation_message
-        
-        # Create state snapshot before transition
-        await self._create_state_snapshot(context)
-        
-        # Perform transition
-        old_stage = context.current_stage
-        context.current_stage = new_stage
-        context.metadata["last_activity"] = datetime.now()
-        context.metadata["transition_count"] += 1
+        async with self._lock:
+            if session_id not in self.active_conversations:
+                return False, "Conversation not found"
+            
+            context = self.active_conversations[session_id]
+            current_stage = context.current_stage
+            
+            # Validate transition
+            transition_valid, validation_message = await self._validate_transition(
+                current_stage, new_stage, transition_type, context
+            )
+            
+            if not transition_valid:
+                return False, validation_message
+            
+            # Create state snapshot before transition
+            await self._create_state_snapshot(context)
+            
+            # Perform transition
+            old_stage = context.current_stage
+            context.current_stage = new_stage
+            context.metadata["last_activity"] = datetime.now(timezone.utc)
+            context.metadata["transition_count"] += 1
         
         # Apply context updates if provided
         if context_updates:
@@ -346,7 +354,7 @@ class ConversationStateManager:
         """Create a snapshot of current conversation state"""
         
         snapshot = StateSnapshot(
-            timestamp=datetime.now(),
+            timestamp=datetime.now(timezone.utc),
             stage=context.current_stage,
             context=self._serialize_context(context),
             agent_outputs=[],
@@ -383,14 +391,14 @@ class ConversationStateManager:
         
         transition_log = {
             "session_id": session_id,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "old_stage": old_stage.value,
             "new_stage": new_stage.value,
             "transition_type": transition_type.value
         }
         
         # Store transition log (in production, this would go to a database)
-        print(f"State Transition: {transition_log}")
+        logger.info(f"State Transition: {transition_log}")
     
     async def _check_conversation_conditions(self, context: ConversationContext):
         """Check for conversation completion, escalation, or other conditions"""
@@ -434,7 +442,7 @@ class ConversationStateManager:
         # Check time threshold
         start_time = context.metadata.get("start_time")
         if start_time:
-            duration = (datetime.now() - start_time).total_seconds()
+            duration = (datetime.now(timezone.utc) - start_time).total_seconds()
             if duration > escalation_triggers["time_threshold"]:
                 context.metadata["escalation_flags"].append("time_threshold")
         
@@ -447,7 +455,7 @@ class ConversationStateManager:
         
         last_activity = context.metadata.get("last_activity")
         if last_activity:
-            time_since_activity = datetime.now() - last_activity
+            time_since_activity = datetime.now(timezone.utc) - last_activity
             
             # If no activity for 30 minutes, consider abandoned
             if time_since_activity > timedelta(minutes=30):
@@ -472,7 +480,7 @@ class ConversationStateManager:
         await self._create_state_snapshot(context)
         
         # Move to paused conversations
-        self.paused_conversations[session_id] = (datetime.now(), context)
+        self.paused_conversations[session_id] = (datetime.now(timezone.utc), context)
         del self.active_conversations[session_id]
         
         # Update context state
@@ -490,15 +498,15 @@ class ConversationStateManager:
         pause_time, context = self.paused_conversations[session_id]
         
         # Check if conversation is still resumable (within 24 hours)
-        if datetime.now() - pause_time > timedelta(hours=24):
+        if datetime.now(timezone.utc) - pause_time > timedelta(hours=24):
             # Too old, remove from paused conversations
             del self.paused_conversations[session_id]
             return None
         
         # Restore conversation
         context.metadata["conversation_state"] = ConversationState.ACTIVE
-        context.metadata["last_activity"] = datetime.now()
-        context.metadata["resume_time"] = datetime.now()
+        context.metadata["last_activity"] = datetime.now(timezone.utc)
+        context.metadata["resume_time"] = datetime.now(timezone.utc)
         
         self.active_conversations[session_id] = context
         del self.paused_conversations[session_id]
@@ -553,7 +561,8 @@ class ConversationStateManager:
     async def cleanup_old_conversations(self, max_age_hours: int = 48):
         """Clean up old conversations to free memory"""
         
-        cutoff_time = datetime.now() - timedelta(hours=max_age_hours)
+        async with self._lock:
+            cutoff_time = datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
         
         # Clean up old paused conversations
         to_remove = []

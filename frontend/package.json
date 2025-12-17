@@ -10,14 +10,17 @@
     "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "@headlessui/react": "^1.7.17",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^8.15.0",
     "axios": "^1.6.2",
     "framer-motion": "^10.16.5",
     "lucide-react": "^0.294.0",
-    "react-hot-toast": "^2.4.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
-    "@headlessui/react": "^1.7.17"
+    "react-hot-toast": "^2.4.1",
+    "three": "^0.182.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.37",

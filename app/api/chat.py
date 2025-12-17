@@ -6,7 +6,9 @@ from fastapi import APIRouter, HTTPException, Request
 from app.models.schemas import ChatMessage, ChatResponse
 from app.agents.advanced_master_agent import MasterAgent
 from app.services.intelligent_agent_router import IntelligentAgentRouter, RoutingStrategy
+import logging
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # Initialize advanced systems - will be replaced by app.state in endpoints
@@ -30,11 +32,18 @@ async def chat_endpoint(chat_message: ChatMessage, request: Request):
         
         return response
         
+    except ValueError as e:
+        logger.warning(f"Validation error in chat endpoint: {e}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid request: {str(e)}"
+        )
     except Exception as e:
+        logger.error(f"Error in chat endpoint: {e}", exc_info=True)
         print(f"Error in chat endpoint: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Internal server error: {str(e)}"
+            detail="An error occurred while processing your request. Please try again."
         )
 
 

@@ -10,6 +10,16 @@ from fastapi.responses import FileResponse, JSONResponse
 from contextlib import asynccontextmanager
 import uvicorn
 import os
+import logging
+import asyncio
+from datetime import datetime, timezone
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 from app.database.database import init_db
 from app.api import chat, dummy_apis
@@ -26,10 +36,36 @@ async def lifespan(app: FastAPI):
     # Initialize master agent
     app.state.master_agent = MasterAgent()
     
+    # Start background cleanup task
+    cleanup_task = asyncio.create_task(periodic_cleanup(app.state.master_agent))
+    
+    logger.info("🚀 NBFC Agentic AI Loan Sales Assistant is ready!")
     print("🚀 NBFC Agentic AI Loan Sales Assistant is ready!")
+    
     yield
     
+    # Cancel cleanup task on shutdown
+    cleanup_task.cancel()
+    try:
+        await cleanup_task
+    except asyncio.CancelledError:
+        pass
+    
+    logger.info("👋 Shutting down...")
     print("👋 Shutting down...")
+
+
+async def periodic_cleanup(master_agent):
+    """Periodically clean up old conversations"""
+    while True:
+        try:
+            await asyncio.sleep(3600)  # Run every hour
+            logger.info("Running periodic cleanup...")
+            await master_agent.state_manager.cleanup_old_conversations(max_age_hours=48)
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            logger.error(f"Error in periodic cleanup: {e}", exc_info=True)
 
 
 # Initialize FastAPI app with advanced configuration
