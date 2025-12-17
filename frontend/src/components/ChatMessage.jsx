@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { User, Bot, CheckCircle, XCircle } from 'lucide-react'
+import { User, Bot, CheckCircle, XCircle, Sparkles } from 'lucide-react'
 
 const ChatMessage = ({ message, index, onOptionClick }) => {
   const isUser = message.sender === 'user'
@@ -15,7 +15,7 @@ const ChatMessage = ({ message, index, onOptionClick }) => {
       return text.split('\n').map((line, i) => {
         if (line.includes('LOAN APPROVED') || line.includes('CONGRATULATIONS')) {
           return (
-            <div key={i} className="text-xl font-bold text-green-600 mb-2 animate-pulse">
+            <div key={i} className="text-2xl font-black text-green-300 mb-3 animate-pulse bg-green-500/20 px-4 py-3 rounded-xl border-2 border-green-400">
               {line}
             </div>
           )
@@ -29,7 +29,7 @@ const ChatMessage = ({ message, index, onOptionClick }) => {
       return text.split('\n').map((line, i) => {
         if (line.includes('cannot approve') || line.includes('Unfortunately')) {
           return (
-            <div key={i} className="text-lg font-bold text-red-600 mb-2">
+            <div key={i} className="text-xl font-bold text-red-300 mb-3 bg-red-500/20 px-4 py-3 rounded-xl border-2 border-red-400">
               {line}
             </div>
           )
@@ -43,7 +43,7 @@ const ChatMessage = ({ message, index, onOptionClick }) => {
       return text.split('\n').map((line, i) => {
         if (line.includes('salary slip') || line.includes('verify your current salary')) {
           return (
-            <div key={i} className="text-base font-semibold text-blue-600 mb-1">
+            <div key={i} className="text-lg font-bold text-cyan-300 mb-2 bg-cyan-500/20 px-3 py-2 rounded-lg border-l-4 border-cyan-400">
               {line}
             </div>
           )
@@ -62,64 +62,88 @@ const ChatMessage = ({ message, index, onOptionClick }) => {
       transition={{ delay: index * 0.1 }}
       className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
     >
-      <div className={`flex items-start space-x-3 max-w-[80%] ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
-        {/* Avatar */}
+      <div className={`flex items-start space-x-3 max-w-[65%] ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+        {/* Avatar with glow effect */}
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: index * 0.1 + 0.2 }}
-          className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-md ${
-            isUser 
-              ? 'bg-gradient-to-r from-primary-500 to-primary-600' 
-              : isError 
-                ? 'bg-red-500' 
-                : 'bg-gradient-to-r from-accent-500 to-accent-600'
-          }`}
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ delay: index * 0.1 + 0.2, type: "spring", stiffness: 200 }}
+          className="relative"
         >
-          {isUser ? (
-            <User className="w-5 h-5 text-white" />
-          ) : isError ? (
-            <XCircle className="w-5 h-5 text-white" />
-          ) : (
-            <Bot className="w-5 h-5 text-white" />
-          )}
+          <motion.div
+            className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-2xl ${
+              isUser 
+                ? 'bg-gradient-to-br from-purple-500 to-cyan-500' 
+                : isError 
+                  ? 'bg-gradient-to-br from-red-500 to-rose-600' 
+                  : 'bg-gradient-to-br from-indigo-500 to-purple-500'
+            }`}
+            animate={{
+              boxShadow: isUser
+                ? ['0 0 20px rgba(168, 85, 247, 0.4)', '0 0 30px rgba(168, 85, 247, 0.6)', '0 0 20px rgba(168, 85, 247, 0.4)']
+                : ['0 0 20px rgba(99, 102, 241, 0.4)', '0 0 30px rgba(99, 102, 241, 0.6)', '0 0 20px rgba(99, 102, 241, 0.4)']
+            }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            {isUser ? (
+              <User className="w-5 h-5 text-white" strokeWidth={2.5} />
+            ) : isError ? (
+              <XCircle className="w-5 h-5 text-white" strokeWidth={2.5} />
+            ) : (
+              <Bot className="w-5 h-5 text-white" strokeWidth={2.5} />
+            )}
+          </motion.div>
         </motion.div>
 
-        {/* Message Bubble */}
+        {/* Message Bubble with glassmorphism */}
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: index * 0.1 + 0.3 }}
-          className={`relative px-4 py-3 rounded-2xl shadow-sm ${
+          initial={{ scale: 0.8, opacity: 0, x: isUser ? 20 : -20 }}
+          animate={{ scale: 1, opacity: 1, x: 0 }}
+          transition={{ delay: index * 0.1 + 0.3, type: "spring", stiffness: 100 }}
+          className={`relative px-5 py-4 rounded-2xl shadow-2xl backdrop-blur-xl ${
             isUser 
-              ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-br-md' 
+              ? 'bg-gradient-to-br from-purple-500 to-cyan-500 text-white rounded-br-md border border-white/20' 
               : isError 
-                ? 'bg-red-50 border border-red-200 text-red-800 rounded-bl-md'
-                : 'bg-white border border-slate-200 text-slate-800 rounded-bl-md'
+                ? 'bg-red-500/20 border border-red-400/50 text-red-100 rounded-bl-md backdrop-blur-xl'
+                : 'bg-white/10 border border-white/20 text-white rounded-bl-md'
           }`}
         >
           {/* Message Text */}
-          <div className={`whitespace-pre-wrap text-sm leading-relaxed ${isUser ? 'text-white' : ''}`}>
+          <div className={`whitespace-pre-wrap text-base leading-relaxed ${isUser ? 'text-white' : ''}`}>
             {formatMessage(message.text)}
           </div>
 
           {/* Options */}
           {message.options && message.options.length > 0 && (
-            <div className="mt-3 space-y-2">
+            <div className="mt-4 space-y-3">
               {message.options.map((option, idx) => (
                 <motion.button
                   key={idx}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 + idx * 0.1 }}
-                  className="block w-full text-left px-3 py-2 bg-slate-50 hover:bg-primary-50 rounded-lg text-sm transition-colors border border-slate-200 hover:border-primary-300 hover:shadow-sm cursor-pointer"
+                  whileHover={{ scale: 1.02, x: 5 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="relative group block w-full text-left px-5 py-4 bg-gradient-to-r from-purple-500/30 to-cyan-500/30 hover:from-purple-500/50 hover:to-cyan-500/50 rounded-xl text-base font-semibold text-white transition-all duration-300 border-2 border-white/30 hover:border-white/60 hover:shadow-xl backdrop-blur-xl cursor-pointer overflow-hidden"
                   onClick={() => {
                     if (onOptionClick) {
                       onOptionClick(option)
                     }
                   }}
                 >
-                  {option}
+                  {/* Hover glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-400/0 via-cyan-400/20 to-purple-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  
+                  <span className="relative z-10 flex items-center justify-between">
+                    <span>{option}</span>
+                    <motion.span
+                      className="opacity-0 group-hover:opacity-100"
+                      animate={{ x: [0, 5, 0] }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                    >
+                      →
+                    </motion.span>
+                  </span>
                 </motion.button>
               ))}
             </div>

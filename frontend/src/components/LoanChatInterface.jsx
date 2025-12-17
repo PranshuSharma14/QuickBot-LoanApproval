@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, MessageCircle, User, Bot, Download, Upload, FileText, CheckCircle, XCircle } from 'lucide-react'
+import { Send, MessageCircle, User, Bot, Download, Upload, FileText, CheckCircle, XCircle, Sparkles, Star, Zap } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import axios from 'axios'
 import ChatMessage from './ChatMessage'
@@ -158,10 +158,11 @@ const LoanChatInterface = () => {
   }
 
   const extractLoanDetails = (message) => {
-      const amountMatch = message.match(/Principal Amount\*\*: ₹([\d,]+)/i)
-      const emiMatch = message.match(/Monthly EMI\*\*: ₹([\d,]+)/i)
-      const tenureMatch = message.match(/Loan Tenure\*\*: (\d+)\s*months/i)
-      const rateMatch = message.match(/Interest Rate\*\*: ([\d.]+)%/i)
+      // Try multiple patterns for loan amount
+      const amountMatch = message.match(/(?:Principal Amount|Principal|Loan Amount|Amount)\s*(?:\*\*)?:?\s*₹\s*([\d,]+)/i)
+      const emiMatch = message.match(/(?:Monthly EMI|EMI)\s*(?:\*\*)?:?\s*₹\s*([\d,]+)/i)
+      const tenureMatch = message.match(/(?:Loan Tenure|Tenure)\s*(?:\*\*)?:?\s*(\d+)\s*months?/i)
+      const rateMatch = message.match(/(?:Interest Rate|Rate)\s*(?:\*\*)?:?\s*([\d.]+)\s*%/i)
 
       if (!amountMatch) return
 
@@ -170,6 +171,13 @@ const LoanChatInterface = () => {
         emi: emiMatch ? `₹${emiMatch[1]}` : '—',
         tenure: tenureMatch ? `${tenureMatch[1]} months` : '—',
         rate: rateMatch ? `${rateMatch[1]}%` : '—'
+      })
+      
+      console.log('Extracted loan details:', {
+        amount: amountMatch ? amountMatch[1] : 'not found',
+        emi: emiMatch ? emiMatch[1] : 'not found',
+        tenure: tenureMatch ? tenureMatch[1] : 'not found',
+        rate: rateMatch ? rateMatch[1] : 'not found'
       })
   }
 
@@ -274,78 +282,217 @@ const LoanChatInterface = () => {
   if (!conversationStarted) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-4xl mx-auto"
+        transition={{ duration: 0.8 }}
+        className="w-full max-w-5xl mx-auto"
       >
-        {/* Welcome Hero Section */}
-        <div className="text-center mb-8">
+        {/* Welcome Hero Section with stunning design */}
+        <div className="text-center mb-12 relative">
+          {/* Floating particles */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {[...Array(10)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-2 h-2 bg-purple-400/30 rounded-full"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                }}
+                animate={{
+                  y: [-20, 20],
+                  x: [-10, 10],
+                  scale: [1, 1.5, 1],
+                  opacity: [0, 1, 0],
+                }}
+                transition={{
+                  duration: 3 + Math.random() * 2,
+                  repeat: Infinity,
+                  delay: Math.random() * 2,
+                }}
+              />
+            ))}
+          </div>
+
           <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="w-24 h-24 bg-gradient-to-r from-primary-500 to-accent-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl"
+            initial={{ scale: 0.5, opacity: 0, rotate: -180 }}
+            animate={{ scale: 1, opacity: 1, rotate: 0 }}
+            transition={{ delay: 0.2, duration: 1, type: "spring" }}
+            className="relative w-32 h-32 mx-auto mb-8"
           >
-            <Bot className="w-12 h-12 text-white" />
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-3xl"
+              animate={{ 
+                rotate: 360,
+                scale: [1, 1.1, 1]
+              }}
+              transition={{ 
+                rotate: { duration: 20, repeat: Infinity, ease: "linear" },
+                scale: { duration: 2, repeat: Infinity }
+              }}
+            />
+            <div className="absolute inset-1 bg-slate-900/90 rounded-3xl flex items-center justify-center">
+              <Bot className="w-16 h-16 text-white" strokeWidth={2} />
+            </div>
+            <motion.div
+              className="absolute inset-0"
+              animate={{ 
+                boxShadow: [
+                  '0 0 20px rgba(168, 85, 247, 0.5)',
+                  '0 0 60px rgba(168, 85, 247, 0.8)',
+                  '0 0 20px rgba(168, 85, 247, 0.5)',
+                ]
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
           </motion.div>
 
           <motion.h1
-            initial={{ y: 20, opacity: 0 }}
+            initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="text-4xl md:text-5xl font-bold font-display mb-4"
+            transition={{ delay: 0.4, duration: 0.8 }}
+            className="text-5xl md:text-6xl font-black mb-6"
           >
-            Welcome to <span className="gradient-text">QuickLoan</span>
+            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+              Welcome to QuickLoan AI
+            </span>
           </motion.h1>
 
           <motion.p
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto"
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className="text-xl md:text-2xl text-white/80 mb-12 max-w-3xl mx-auto leading-relaxed font-medium"
           >
-            Your AI-powered loan assistant is here to help you get instant personal loans
-            with competitive rates and minimal documentation.
+            Experience the future of lending with our{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 font-bold">
+              AI-powered assistant
+            </span>
+            {' '}— Get instant personal loans with minimal documentation
           </motion.p>
 
-          {/* Features Grid */}
+          {/* Features Grid with stunning design */}
+          <motion.div
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+            className="grid md:grid-cols-3 gap-6 mb-12"
+          >
+            {[
+              {
+                icon: Zap,
+                title: 'Lightning Fast',
+                desc: 'Approval in under 5 minutes',
+                gradient: 'from-yellow-400 to-orange-500',
+                bgGradient: 'from-yellow-500/20 to-orange-500/20'
+              },
+              {
+                icon: FileText,
+                title: 'Simple Process',
+                desc: 'Minimal paperwork required',
+                gradient: 'from-blue-400 to-cyan-500',
+                bgGradient: 'from-blue-500/20 to-cyan-500/20'
+              },
+              {
+                icon: Sparkles,
+                title: 'Smart AI',
+                desc: 'Personalized recommendations',
+                gradient: 'from-purple-400 to-pink-500',
+                bgGradient: 'from-purple-500/20 to-pink-500/20'
+              }
+            ].map((feature, idx) => (
+              <motion.div
+                key={idx}
+                className={`relative group backdrop-blur-xl bg-gradient-to-br ${feature.bgGradient} border border-white/20 rounded-3xl p-8 overflow-hidden`}
+                whileHover={{ scale: 1.05, y: -5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                {/* Animated border */}
+                <motion.div
+                  className={`absolute inset-0 bg-gradient-to-r ${feature.gradient} opacity-0 group-hover:opacity-20 transition-opacity duration-300`}
+                  animate={{
+                    backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  style={{ backgroundSize: '200% 200%' }}
+                />
+                
+                <motion.div
+                  className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center shadow-2xl`}
+                  whileHover={{ rotate: 360 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <feature.icon className="w-8 h-8 text-white" strokeWidth={2.5} />
+                </motion.div>
+                
+                <h3 className="font-bold text-xl text-white mb-2">{feature.title}</h3>
+                <p className="text-white/70 font-medium">{feature.desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* CTA Button with amazing animation */}
           <motion.div
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="grid md:grid-cols-3 gap-6 mb-10"
+            transition={{ delay: 1, duration: 0.6 }}
           >
-            <div className="glass-effect p-6 rounded-2xl">
-              <CheckCircle className="w-8 h-8 text-accent-500 mx-auto mb-3" />
-              <h3 className="font-semibold mb-2">Instant Approval</h3>
-              <p className="text-sm text-slate-600">Get loan decisions in minutes, not days</p>
-            </div>
+            <motion.button
+              onClick={startConversation}
+              className="relative group px-12 py-5 text-xl font-bold text-white rounded-2xl overflow-hidden shadow-2xl"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {/* Animated gradient background */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500"
+                animate={{
+                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
+                }}
+                transition={{ duration: 3, repeat: Infinity }}
+                style={{ backgroundSize: '200% 200%' }}
+              />
+              
+              {/* Button content */}
+              <span className="relative z-10 flex items-center space-x-3">
+                <MessageCircle className="w-6 h-6" />
+                <span>Start Your Loan Journey</span>
+                <motion.div
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  →
+                </motion.div>
+              </span>
 
-            <div className="glass-effect p-6 rounded-2xl">
-              <FileText className="w-8 h-8 text-primary-500 mx-auto mb-3" />
-              <h3 className="font-semibold mb-2">Minimal Docs</h3>
-              <p className="text-sm text-slate-600">Simple paperwork, maximum convenience</p>
-            </div>
-
-            <div className="glass-effect p-6 rounded-2xl">
-              <User className="w-8 h-8 text-accent-500 mx-auto mb-3" />
-              <h3 className="font-semibold mb-2">Human-like AI</h3>
-              <p className="text-sm text-slate-600">Natural conversation, personalized service</p>
-            </div>
+              {/* Hover glow effect */}
+              <motion.div
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{
+                  background: 'radial-gradient(circle at center, rgba(255,255,255,0.3) 0%, transparent 70%)'
+                }}
+              />
+            </motion.button>
           </motion.div>
 
-          <motion.button
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 1 }}
-            onClick={startConversation}
-            className="btn-primary text-lg px-8 py-4 inline-flex items-center space-x-2"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          {/* Trust indicators */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2 }}
+            className="mt-12 flex items-center justify-center space-x-8 text-sm text-white/60"
           >
-            <MessageCircle className="w-5 h-5" />
-            <span>Start Your Loan Journey</span>
-          </motion.button>
+            {[
+              { icon: Star, text: '4.9/5 Rating' },
+              { icon: CheckCircle, text: '50K+ Approved' },
+              { icon: Sparkles, text: 'AI Powered' }
+            ].map((item, idx) => (
+              <div key={idx} className="flex items-center space-x-2">
+                <item.icon className="w-4 h-4 text-yellow-400" />
+                <span className="font-semibold">{item.text}</span>
+              </div>
+            ))}
+          </motion.div>
         </div>
       </motion.div>
     )
@@ -355,18 +502,32 @@ const LoanChatInterface = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="w-full max-w-6xl mx-auto h-[80vh] flex flex-col relative"
+      className="w-full max-w-5xl mx-auto h-[90vh] flex flex-col relative"
     >
-      {/* Progress Indicator */}
-      <LoanProgress currentStage={getStageProgress()} isRejected={isRejected} />
+      {/* Progress Indicator with stunning design */}
+      <motion.div
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2 }}
+      >
+        <LoanProgress currentStage={getStageProgress()} isRejected={isRejected} />
+      </motion.div>
 
-      {/* Chat Container */}
-      <div className="flex-1 flex bg-white/60 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 overflow-hidden">
+      {/* Chat Container with glass morphism */}
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+        className="flex-1 flex backdrop-blur-2xl bg-white/10 rounded-3xl shadow-2xl border border-white/20 overflow-hidden relative"
+      >
+        {/* Animated gradient border */}
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-cyan-500/20 to-purple-500/20 animate-gradient-x pointer-events-none" />
+        
         {/* Chat Messages */}
-        <div className="flex-1 flex flex-col">
-          {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide">
-            <AnimatePresence>
+        <div className="flex-1 flex flex-col relative z-10">
+          {/* Messages Area with custom scrollbar */}
+          <div className="flex-1 overflow-y-auto p-10 space-y-6 custom-scrollbar">
+            <AnimatePresence mode="popLayout">
               {messages.map((message, index) => (
                 <ChatMessage
                   key={message.id}
@@ -381,9 +542,9 @@ const LoanChatInterface = () => {
               {/* File Upload Area - Inline */}
               {showFileUpload && (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
                   className="my-4"
                 >
                   <FileUploader onUpload={handleFileUpload} />
@@ -393,85 +554,183 @@ const LoanChatInterface = () => {
             <div ref={messagesEndRef} />
           </div>
 
-         {/* Input Area or Reset */}
-         <div className="p-6 border-t border-slate-200/50">
+         {/* Input Area with glassmorphism */}
+         <div className="p-8 border-t border-white/10 backdrop-blur-xl bg-white/5">
             {conversationEnded ? (
               <div className="flex justify-center">
                 <motion.button
                    onClick={resetConversation}
-                   className="btn-secondary px-6 py-3 flex items-center space-x-2"
+                   className="relative group px-8 py-4 text-lg font-bold text-white rounded-2xl overflow-hidden shadow-xl"
                    whileHover={{ scale: 1.05 }}
-                       whileTap={{ scale: 0.95 }}
+                   whileTap={{ scale: 0.95 }}
                 >
-                   <span>🔁 Start New Loan</span>
+                  {/* Animated background */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500"
+                    animate={{
+                      backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
+                    }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                    style={{ backgroundSize: '200% 200%' }}
+                  />
+                  <span className="relative z-10 flex items-center space-x-2">
+                    <span>🔁</span>
+                    <span>Start New Application</span>
+                  </span>
                 </motion.button>
              </div>
             ) : (
               <form onSubmit={handleSubmit} className="flex space-x-4">
-                <input
-                   ref={inputRef}
-                   type="text"
-                   value={inputValue}
-                   onChange={(e) => setInputValue(e.target.value)}
-                   placeholder="Type your message..."
-                   className="input-field"
-                   disabled={isLoading || showFileUpload}
-                />
+                <div className="flex-1 relative">
+                  <input
+                     ref={inputRef}
+                     type="text"
+                     value={inputValue}
+                     onChange={(e) => setInputValue(e.target.value)}
+                     placeholder="Type your message..."
+                     className="w-full px-6 py-5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl text-white text-lg placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 font-medium"
+                     disabled={isLoading || showFileUpload}
+                  />
+                  {/* Input glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 rounded-2xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
+                </div>
 
                <motion.button
                   type="submit"
                   disabled={isLoading || !inputValue.trim() || showFileUpload}
-                  className="btn-primary px-4 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative group px-8 py-5 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed shadow-lg overflow-hidden"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
               >
-                 <Send className="w-5 h-5" />
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  animate={{
+                    backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  style={{ backgroundSize: '200% 200%' }}
+                />
+                 <Send className="w-6 h-6 text-white relative z-10" />
               </motion.button>
            </form>
           )}
         </div>
         </div>
-        {/* Loan Details Sidebar */}
+
+        {/* Loan Details Sidebar with stunning design */}
         <AnimatePresence>
           {Object.keys(loanDetails).length > 0 && (
             <motion.div
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 300, opacity: 1 }}
-              exit={{ width: 0, opacity: 0 }}
-              className="border-l border-slate-200/50 p-6 bg-gradient-to-b from-accent-50 to-primary-50"
+              initial={{ width: 0, opacity: 0, x: 20 }}
+              animate={{ width: 350, opacity: 1, x: 0 }}
+              exit={{ width: 0, opacity: 0, x: 20 }}
+              transition={{ type: "spring", stiffness: 100 }}
+              className="relative border-l border-white/10 backdrop-blur-xl bg-gradient-to-b from-purple-500/10 to-cyan-500/10 overflow-hidden"
             >
-              <h3 className="font-semibold text-lg mb-4 text-slate-800">Loan Summary</h3>
+              {/* Animated background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-cyan-500/5" />
               
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Amount:</span>
-                  <span className="font-semibold">{loanDetails.amount}</span>
+              <div className="p-6 relative z-10 flex flex-col h-full">
+                <motion.h3
+                  initial={{ y: -10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  className="text-xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent mb-4"
+                >
+                  Loan Summary
+                </motion.h3>
+                
+                <div className="space-y-3 mb-6 flex-1">
+                  {[
+                    { label: 'Principal', value: loanDetails.amount, icon: '💰', color: 'from-green-400 to-emerald-500' },
+                    { label: 'Monthly EMI', value: loanDetails.emi, icon: '📅', color: 'from-blue-400 to-cyan-500' },
+                    { label: 'Tenure', value: loanDetails.tenure, icon: '⏱️', color: 'from-purple-400 to-pink-500' },
+                    { label: 'Interest Rate', value: loanDetails.rate, icon: '📈', color: 'from-orange-400 to-red-500' }
+                  ].map((item, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ x: 20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="relative group"
+                    >
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-300">
+                        <div className="flex items-center space-x-2">
+                          <motion.div
+                            className={`w-8 h-8 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center shadow-lg`}
+                            whileHover={{ rotate: 360, scale: 1.1 }}
+                            transition={{ duration: 0.5 }}
+                          >
+                            <span className="text-base">{item.icon}</span>
+                          </motion.div>
+                          <span className="text-xs font-medium text-white/70">{item.label}</span>
+                        </div>
+                        <span className="text-base font-bold text-white">{item.value}</span>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">EMI:</span>
-                  <span className="font-semibold">{loanDetails.emi}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Tenure:</span>
-                  <span className="font-semibold">{loanDetails.tenure}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Rate:</span>
-                  <span className="font-semibold">{loanDetails.rate}</span>
+
+                <motion.button
+                  onClick={downloadSanctionLetter}
+                  className="relative w-full group py-3 text-white font-bold rounded-xl overflow-hidden shadow-2xl mt-auto"
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  {/* Animated gradient background */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500"
+                    animate={{
+                      backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
+                    }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                    style={{ backgroundSize: '200% 200%' }}
+                  />
+                  
+                  <div className="relative z-10 flex items-center justify-center space-x-3">
+                    <Download className="w-5 h-5" />
+                    <span>Download Sanction Letter</span>
+                  </div>
+
+                  {/* Shine effect */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                    animate={{ x: ['-200%', '200%'] }}
+                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+                  />
+                </motion.button>
+
+                {/* Celebration confetti effect */}
+                <div className="absolute inset-0 pointer-events-none">
+                  {[...Array(15)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute w-2 h-2 rounded-full"
+                      style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                        background: ['#a78bfa', '#06b6d4', '#f472b6', '#fbbf24'][Math.floor(Math.random() * 4)]
+                      }}
+                      animate={{
+                        y: [0, -100],
+                        opacity: [1, 0],
+                        scale: [1, 0],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        delay: Math.random() * 2,
+                      }}
+                    />
+                  ))}
                 </div>
               </div>
-
-              <button
-                onClick={downloadSanctionLetter}
-                className="btn-primary w-full mt-6 inline-flex items-center justify-center space-x-2"
-              >
-                <Download className="w-4 h-4" />
-                <span>Download Letter</span>
-              </button>
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
     </motion.div>
   )
 }
