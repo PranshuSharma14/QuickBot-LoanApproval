@@ -1,31 +1,69 @@
-import React from 'react'
-import { Toaster } from 'react-hot-toast'
-import { motion } from 'framer-motion'
-import LoanChatInterface from './components/LoanChatInterface'
-import Header from './components/Header'
-import Footer from './components/Footer'
-import AnimatedBackground from './components/AnimatedBackground'
+import React, { useState, useEffect } from 'react';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import Dashboard from './pages/Dashboard';
+import BankChatInterface from './components/BankChatInterface';
 
-function App() {
+// Main App Content with Auth
+const AppContent = () => {
+  const { isAuthenticated, loading, user } = useAuth();
+  const [currentPage, setCurrentPage] = useState('login'); // login, signup, dashboard, chat
+  const [activeLoanId, setActiveLoanId] = useState(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setCurrentPage('dashboard');
+    } else if (!loading) {
+      setCurrentPage('login');
+    }
+  }, [isAuthenticated, loading]);
+
+  const handleLoginSuccess = () => {
+    setCurrentPage('dashboard');
+  };
+
+  const handleLogout = () => {
+    setCurrentPage('login');
+  };
+
+  const handleStartNewLoan = (loanId) => {
+    setActiveLoanId(loanId);
+    setCurrentPage('chat');
+  };
+
+  const handleBackFromChat = () => {
+    setCurrentPage('dashboard');
+    setActiveLoanId(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#004c8c] to-[#0066b3]">
+        <div className="text-center text-white">
+          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <span className="text-[#004c8c] font-bold text-2xl">QL</span>
+          </div>
+          <p className="text-lg">Loading QuickLoan...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden">
-      {/* Animated Three.js Background */}
-      <AnimatedBackground />
-      
-      {/* Toast Notifications with custom style */}
+    <>
       <Toaster 
         position="top-center"
         toastOptions={{
           duration: 4000,
           style: {
-            background: 'rgba(30, 30, 46, 0.95)',
+            background: '#1e293b',
             color: '#fff',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(139, 92, 246, 0.3)',
-            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
-            borderRadius: '16px',
-            fontSize: '15px',
+            borderRadius: '12px',
+            fontSize: '14px',
             fontWeight: '500',
+            padding: '12px 16px',
           },
           success: {
             iconTheme: {
@@ -41,38 +79,45 @@ function App() {
           },
         }}
       />
-      
-      {/* Animated Header */}
-      <motion.div
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-      >
-        <Header />
-      </motion.div>
-      
-      {/* Main Content with smooth entrance */}
-      <main className="flex-1 flex items-center justify-center p-4 md:p-8 relative z-10">
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-          className="w-full max-w-7xl"
-        >
-          <LoanChatInterface />
-        </motion.div>
-      </main>
-      
-      {/* Animated Footer */}
-      <motion.div
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-      >
-        <Footer />
-      </motion.div>
-    </div>
-  )
+
+      {currentPage === 'login' && (
+        <LoginPage 
+          onSwitchToSignup={() => setCurrentPage('signup')}
+          onLoginSuccess={handleLoginSuccess}
+        />
+      )}
+
+      {currentPage === 'signup' && (
+        <SignupPage 
+          onSwitchToLogin={() => setCurrentPage('login')}
+        />
+      )}
+
+      {currentPage === 'dashboard' && (
+        <Dashboard 
+          onStartNewLoan={handleStartNewLoan}
+          onLogout={handleLogout}
+        />
+      )}
+
+      {currentPage === 'chat' && (
+        <BankChatInterface 
+          onBack={handleBackFromChat}
+          userInfo={user}
+          loanId={activeLoanId}
+        />
+      )}
+    </>
+  );
+};
+
+// Root App with Provider
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;

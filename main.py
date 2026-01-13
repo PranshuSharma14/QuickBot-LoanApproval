@@ -1,6 +1,7 @@
 """
 Advanced Main FastAPI application for Agentic AI Loan Sales Assistant
 An Indian NBFC loan processing system with sophisticated multi-agent orchestration
+QuickLoan Bank Portal - HDFC-style banking experience
 """
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
@@ -22,7 +23,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 from app.database.database import init_db
+from app.database.postgres_models import init_postgres_db
 from app.api import chat, dummy_apis
+from app.api.auth import router as auth_router
+from app.api.dashboard import router as dashboard_router
+from app.api.ocr import router as ocr_router
 from app.models.schemas import ChatMessage, ChatResponse
 from app.agents.master_agent import MasterAgent
 
@@ -30,8 +35,15 @@ from app.agents.master_agent import MasterAgent
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialize database and master agent on startup"""
-    # Initialize database
+    # Initialize SQLite database (for legacy/existing AI flow)
     init_db()
+    
+    # Initialize PostgreSQL database (for user auth & dashboard)
+    try:
+        init_postgres_db()
+        logger.info("✅ PostgreSQL database initialized")
+    except Exception as e:
+        logger.warning(f"⚠️ PostgreSQL initialization failed: {e}. Using SQLite fallback for demo.")
     
     # Initialize master agent
     app.state.master_agent = MasterAgent()
@@ -81,7 +93,7 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # React dev server
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001", "http://localhost:5173", "http://127.0.0.1:5173"],  # React dev server
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -91,6 +103,9 @@ app.add_middleware(
 app.mount("/generated", StaticFiles(directory="generated"), name="generated")
 
 # Include routers
+app.include_router(auth_router, tags=["Authentication"])
+app.include_router(dashboard_router, tags=["Dashboard"])
+app.include_router(ocr_router, tags=["OCR"])
 app.include_router(chat.router, prefix="/api", tags=["Chat"])
 app.include_router(dummy_apis.router, prefix="/api", tags=["External APIs"])
 

@@ -281,220 +281,85 @@ const LoanChatInterface = () => {
   
   if (!conversationStarted) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="w-full max-w-5xl mx-auto"
-      >
-        {/* Welcome Hero Section with stunning design */}
-        <div className="text-center mb-12 relative">
-          {/* Floating particles */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {[...Array(10)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-2 h-2 bg-purple-400/30 rounded-full"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                }}
-                animate={{
-                  y: [-20, 20],
-                  x: [-10, 10],
-                  scale: [1, 1.5, 1],
-                  opacity: [0, 1, 0],
-                }}
-                transition={{
-                  duration: 3 + Math.random() * 2,
-                  repeat: Infinity,
-                  delay: Math.random() * 2,
-                }}
-              />
-            ))}
+      <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+        {/* Left: Bank-style hero (blue) */}
+        <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            className="min-h-[70vh] p-10 rounded-3xl bg-[#0b4f82] text-white shadow-xl overflow-hidden relative"
+          >
+          {/* subtle decorative orbs */}
+          <div className="absolute inset-0 mix-blend-overlay opacity-20 pointer-events-none">
+            <div className="absolute -left-16 top-8 w-72 h-72 rounded-full blur-3xl" style={{ background: 'var(--brand-blue)' }} />
+            <div className="absolute -right-16 bottom-8 w-72 h-72 rounded-full blur-3xl" style={{ background: 'var(--brand-blue-dark)' }} />
           </div>
 
-          <motion.div
-            initial={{ scale: 0.5, opacity: 0, rotate: -180 }}
-            animate={{ scale: 1, opacity: 1, rotate: 0 }}
-            transition={{ delay: 0.2, duration: 1, type: "spring" }}
-            className="relative w-32 h-32 mx-auto mb-8"
-          >
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-3xl"
-              animate={{ 
-                rotate: 360,
-                scale: [1, 1.1, 1]
-              }}
-              transition={{ 
-                rotate: { duration: 20, repeat: Infinity, ease: "linear" },
-                scale: { duration: 2, repeat: Infinity }
-              }}
-            />
-            <div className="absolute inset-1 bg-slate-900/90 rounded-3xl flex items-center justify-center">
-              <Bot className="w-16 h-16 text-white" strokeWidth={2} />
-            </div>
-            <motion.div
-              className="absolute inset-0"
-              animate={{ 
-                boxShadow: [
-                  '0 0 20px rgba(168, 85, 247, 0.5)',
-                  '0 0 60px rgba(168, 85, 247, 0.8)',
-                  '0 0 20px rgba(168, 85, 247, 0.5)',
-                ]
-              }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-          </motion.div>
+          <div className="relative z-10 max-w-xl">
+            <h2 className="text-4xl md:text-5xl font-extrabold mb-4">Easy and Simple way to apply for a Loan</h2>
+            <p className="text-lg text-sky-100/90 mb-8">Paperless • Fast • Secure. Get personalised offers and instant decisions using our AI-powered assistant.</p>
 
-          <motion.h1
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-            className="text-5xl md:text-6xl font-black mb-6"
-          >
-            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-              Welcome to QuickLoan AI
-            </span>
-          </motion.h1>
+            <ul className="space-y-3 mb-8">
+              <li className="flex items-start gap-3">
+                <span className="inline-block w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">💡</span>
+                <div>
+                  <div className="font-semibold">Instant Approvals</div>
+                  <div className="text-sm text-sky-100/80">Most customers approved within minutes</div>
+                </div>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="inline-block w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">🔒</span>
+                <div>
+                  <div className="font-semibold">Bank-grade Security</div>
+                  <div className="text-sm text-sky-100/80">Your data stays safe and private</div>
+                </div>
+              </li>
+            </ul>
 
-          <motion.p
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.6 }}
-            className="text-xl md:text-2xl text-white/80 mb-12 max-w-3xl mx-auto leading-relaxed font-medium"
-          >
-            Experience the future of lending with our{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 font-bold">
-              AI-powered assistant
-            </span>
-            {' '}— Get instant personal loans with minimal documentation
-          </motion.p>
-
-          {/* Features Grid with stunning design */}
-          <motion.div
-            initial={{ y: 40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            className="grid md:grid-cols-3 gap-6 mb-12"
-          >
-            {[
-              {
-                icon: Zap,
-                title: 'Lightning Fast',
-                desc: 'Approval in under 5 minutes',
-                gradient: 'from-yellow-400 to-orange-500',
-                bgGradient: 'from-yellow-500/20 to-orange-500/20'
-              },
-              {
-                icon: FileText,
-                title: 'Simple Process',
-                desc: 'Minimal paperwork required',
-                gradient: 'from-blue-400 to-cyan-500',
-                bgGradient: 'from-blue-500/20 to-cyan-500/20'
-              },
-              {
-                icon: Sparkles,
-                title: 'Smart AI',
-                desc: 'Personalized recommendations',
-                gradient: 'from-purple-400 to-pink-500',
-                bgGradient: 'from-purple-500/20 to-pink-500/20'
-              }
-            ].map((feature, idx) => (
-              <motion.div
-                key={idx}
-                className={`relative group backdrop-blur-xl bg-gradient-to-br ${feature.bgGradient} border border-white/20 rounded-3xl p-8 overflow-hidden`}
-                whileHover={{ scale: 1.05, y: -5 }}
-                transition={{ type: "spring", stiffness: 300 }}
+            <div className="mt-6">
+              <button
+                onClick={startConversation}
+                className="px-8 py-4 bg-white text-[#0b4f82] rounded-lg font-bold shadow-lg hover:shadow-2xl transition"
               >
-                {/* Animated border */}
-                <motion.div
-                  className={`absolute inset-0 bg-gradient-to-r ${feature.gradient} opacity-0 group-hover:opacity-20 transition-opacity duration-300`}
-                  animate={{
-                    backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
-                  }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                  style={{ backgroundSize: '200% 200%' }}
-                />
-                
-                <motion.div
-                  className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center shadow-2xl`}
-                  whileHover={{ rotate: 360 }}
-                  transition={{ duration: 0.6 }}
-                >
-                  <feature.icon className="w-8 h-8 text-white" strokeWidth={2.5} />
-                </motion.div>
-                
-                <h3 className="font-bold text-xl text-white mb-2">{feature.title}</h3>
-                <p className="text-white/70 font-medium">{feature.desc}</p>
-              </motion.div>
-            ))}
-          </motion.div>
+                Start Application
+              </button>
+            </div>
+          </div>
+        </motion.div>
 
-          {/* CTA Button with amazing animation */}
-          <motion.div
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 1, duration: 0.6 }}
-          >
-            <motion.button
-              onClick={startConversation}
-              className="relative group px-12 py-5 text-xl font-bold text-white rounded-2xl overflow-hidden shadow-2xl"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {/* Animated gradient background */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500"
-                animate={{
-                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
-                style={{ backgroundSize: '200% 200%' }}
-              />
-              
-              {/* Button content */}
-              <span className="relative z-10 flex items-center space-x-3">
-                <MessageCircle className="w-6 h-6" />
-                <span>Start Your Loan Journey</span>
-                <motion.div
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                >
-                  →
-                </motion.div>
-              </span>
+        {/* Right: White card (bank login style) containing a compact chat card */}
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8 }}
+          className="min-h-[70vh] flex items-center justify-center"
+        >
+          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 text-slate-900 border border-slate-200">
+            <div className="text-center mb-4">
+              <h3 className="text-2xl font-bold">QuickLoan</h3>
+              <p className="text-sm text-slate-500">AI Loan Assistant — Secure & Fast</p>
+            </div>
 
-              {/* Hover glow effect */}
-              <motion.div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                style={{
-                  background: 'radial-gradient(circle at center, rgba(255,255,255,0.3) 0%, transparent 70%)'
-                }}
-              />
-            </motion.button>
-          </motion.div>
+            <div className="mt-4">
+              <p className="text-sm text-slate-600 mb-4">Start a secure chat with our assistant to apply for a loan. You can upload documents when prompted.</p>
 
-          {/* Trust indicators */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.2 }}
-            className="mt-12 flex items-center justify-center space-x-8 text-sm text-white/60"
-          >
-            {[
-              { icon: Star, text: '4.9/5 Rating' },
-              { icon: CheckCircle, text: '50K+ Approved' },
-              { icon: Sparkles, text: 'AI Powered' }
-            ].map((item, idx) => (
-              <div key={idx} className="flex items-center space-x-2">
-                <item.icon className="w-4 h-4 text-yellow-400" />
-                <span className="font-semibold">{item.text}</span>
+              <button
+                onClick={startConversation}
+                className="w-full py-3 bg-[#0b4f82] text-white rounded-lg font-semibold shadow"
+              >
+                Start Chat
+              </button>
+            </div>
+
+            <div className="mt-6 border-t pt-4 text-xs text-slate-500">
+              <div className="flex items-center justify-between">
+                <span>Need help?</span>
+                <a className="text-blue-700 font-semibold" href="#">Contact Support</a>
               </div>
-            ))}
-          </motion.div>
-        </div>
-      </motion.div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
     )
   }
 
@@ -521,7 +386,7 @@ const LoanChatInterface = () => {
         className="flex-1 flex backdrop-blur-2xl bg-white/10 rounded-3xl shadow-2xl border border-white/20 overflow-hidden relative"
       >
         {/* Animated gradient border */}
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-cyan-500/20 to-purple-500/20 animate-gradient-x pointer-events-none" />
+        <div className="absolute inset-0 animate-gradient-x pointer-events-none" style={{ background: 'linear-gradient(90deg, rgba(11,79,130,0.08), rgba(200,16,46,0.06))' }} />
         
         {/* Chat Messages */}
         <div className="flex-1 flex flex-col relative z-10">
@@ -565,13 +430,14 @@ const LoanChatInterface = () => {
                    whileTap={{ scale: 0.95 }}
                 >
                   {/* Animated background */}
+                  {/* Animated background */}
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500"
+                    className="absolute inset-0"
+                    style={{ background: 'linear-gradient(90deg, var(--brand-blue), var(--brand-red))', backgroundSize: '200% 200%' }}
                     animate={{
                       backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
                     }}
                     transition={{ duration: 3, repeat: Infinity }}
-                    style={{ backgroundSize: '200% 200%' }}
                   />
                   <span className="relative z-10 flex items-center space-x-2">
                     <span>🔁</span>
@@ -588,27 +454,26 @@ const LoanChatInterface = () => {
                      value={inputValue}
                      onChange={(e) => setInputValue(e.target.value)}
                      placeholder="Type your message..."
-                     className="w-full px-6 py-5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl text-white text-lg placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 font-medium"
+                     className="w-full px-6 py-5 bg-[#f8fafc] border border-slate-200 rounded-2xl text-slate-900 text-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-all duration-300 font-medium"
                      disabled={isLoading || showFileUpload}
                   />
                   {/* Input glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 rounded-2xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
+                  <div className="absolute inset-0 rounded-2xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" style={{ background: 'linear-gradient(90deg, rgba(11,79,130,0.08), rgba(200,16,46,0.06))' }} />
                 </div>
 
-               <motion.button
-                  type="submit"
-                  disabled={isLoading || !inputValue.trim() || showFileUpload}
-                  className="relative group px-8 py-5 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed shadow-lg overflow-hidden"
+              <motion.button
+                type="submit"
+                disabled={isLoading || !inputValue.trim() || showFileUpload}
+                className="relative group px-8 py-5 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed shadow-lg overflow-hidden"
+                style={{ background: 'linear-gradient(90deg, var(--brand-blue), var(--brand-red))', color: 'white' }}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
               >
                 <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                  animate={{
-                    backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
-                  }}
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{ background: 'linear-gradient(90deg, rgba(11,79,130,0.06), rgba(200,16,46,0.04))', backgroundSize: '200% 200%' }}
+                  animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  style={{ backgroundSize: '200% 200%' }}
                 />
                  <Send className="w-6 h-6 text-white relative z-10" />
               </motion.button>
@@ -625,26 +490,27 @@ const LoanChatInterface = () => {
               animate={{ width: 350, opacity: 1, x: 0 }}
               exit={{ width: 0, opacity: 0, x: 20 }}
               transition={{ type: "spring", stiffness: 100 }}
-              className="relative border-l border-white/10 backdrop-blur-xl bg-gradient-to-b from-purple-500/10 to-cyan-500/10 overflow-hidden"
+              className="relative border-l border-white/10 backdrop-blur-xl overflow-hidden"
+              style={{ background: 'linear-gradient(180deg, rgba(11,79,130,0.04), rgba(200,16,46,0.02))' }}
             >
               {/* Animated background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-cyan-500/5" />
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(11,79,130,0.04), transparent, rgba(200,16,46,0.03))' }} />
               
               <div className="p-6 relative z-10 flex flex-col h-full">
                 <motion.h3
                   initial={{ y: -10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  className="text-xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent mb-4"
+                  className="text-xl font-bold gradient-text mb-4"
                 >
                   Loan Summary
                 </motion.h3>
                 
                 <div className="space-y-3 mb-6 flex-1">
                   {[
-                    { label: 'Principal', value: loanDetails.amount, icon: '💰', color: 'from-green-400 to-emerald-500' },
-                    { label: 'Monthly EMI', value: loanDetails.emi, icon: '📅', color: 'from-blue-400 to-cyan-500' },
-                    { label: 'Tenure', value: loanDetails.tenure, icon: '⏱️', color: 'from-purple-400 to-pink-500' },
-                    { label: 'Interest Rate', value: loanDetails.rate, icon: '📈', color: 'from-orange-400 to-red-500' }
+                    { label: 'Principal', value: loanDetails.amount, icon: '💰', color: 'from-brand-blue to-brand-red' },
+                    { label: 'Monthly EMI', value: loanDetails.emi, icon: '📅', color: 'from-brand-blue to-brand-red' },
+                    { label: 'Tenure', value: loanDetails.tenure, icon: '⏱️', color: 'from-brand-blue to-brand-red' },
+                    { label: 'Interest Rate', value: loanDetails.rate, icon: '📈', color: 'from-brand-blue to-brand-red' }
                   ].map((item, idx) => (
                     <motion.div
                       key={idx}
@@ -681,12 +547,12 @@ const LoanChatInterface = () => {
                 >
                   {/* Animated gradient background */}
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500"
+                    className="absolute inset-0"
+                    style={{ background: 'linear-gradient(90deg, var(--brand-blue), var(--brand-red))', backgroundSize: '200% 200%' }}
                     animate={{
                       backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
                     }}
                     transition={{ duration: 3, repeat: Infinity }}
-                    style={{ backgroundSize: '200% 200%' }}
                   />
                   
                   <div className="relative z-10 flex items-center justify-center space-x-3">
@@ -711,7 +577,7 @@ const LoanChatInterface = () => {
                       style={{
                         left: `${Math.random() * 100}%`,
                         top: `${Math.random() * 100}%`,
-                        background: ['#a78bfa', '#06b6d4', '#f472b6', '#fbbf24'][Math.floor(Math.random() * 4)]
+                        background: ['#0b4f82', '#c8102e', '#93c5fd', '#fbbf24'][Math.floor(Math.random() * 4)]
                       }}
                       animate={{
                         y: [0, -100],

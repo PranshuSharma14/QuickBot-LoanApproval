@@ -26,7 +26,8 @@ class BaseAgent(ABC):
         requires_input: bool = True,
         options: Optional[list] = None,
         file_upload: bool = False,
-        final: bool = False
+        final: bool = False,
+        metadata: Optional[Dict[str, Any]] = None
     ) -> ChatResponse:
         """Helper method to generate standardized responses"""
         return ChatResponse(
@@ -36,5 +37,6 @@ class BaseAgent(ABC):
             requires_input=requires_input,
             options=options,
             file_upload=file_upload,
-            final=final
+            final=final,
+            metadata=metadata
         )

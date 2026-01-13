@@ -16,14 +16,14 @@ const TypingIndicator = () => {
           className="relative w-12 h-12"
           animate={{
             boxShadow: [
-              '0 0 20px rgba(99, 102, 241, 0.4)',
-              '0 0 40px rgba(99, 102, 241, 0.6)',
-              '0 0 20px rgba(99, 102, 241, 0.4)'
+              '0 0 20px rgba(11,79,130,0.25)',
+              '0 0 40px rgba(200,16,46,0.18)',
+              '0 0 20px rgba(11,79,130,0.25)'
             ]
           }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-2xl">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-2xl" style={{ background: 'linear-gradient(90deg, var(--brand-blue), var(--brand-red))' }}>
             <Bot className="w-6 h-6 text-white" strokeWidth={2.5} />
           </div>
         </motion.div>
@@ -53,7 +53,8 @@ const TypingIndicator = () => {
                   repeat: Infinity,
                   delay: index * 0.2
                 }}
-                className="w-2.5 h-2.5 bg-gradient-to-r from-purple-400 to-cyan-400 rounded-full"
+                className="w-2.5 h-2.5 rounded-full"
+                style={{ background: 'linear-gradient(90deg, var(--brand-blue), var(--brand-red))' }}
               />
             ))}
           </div>

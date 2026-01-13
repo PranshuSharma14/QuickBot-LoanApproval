@@ -22,21 +22,21 @@ const LoanProgress = ({ currentStage, isRejected }) => {
       className="mb-4 p-4 backdrop-blur-2xl bg-white/10 rounded-2xl border border-white/20 shadow-2xl relative overflow-hidden"
     >
       {/* Animated background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-cyan-500/10 to-purple-500/10 animate-gradient-x" />
+      <div className="absolute inset-0 animate-gradient-x" style={{ background: 'linear-gradient(90deg, rgba(11,79,130,0.08), rgba(200,16,46,0.06))' }} />
       
       <div className="relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-3">
-            <motion.div
+              <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
             >
-              <Sparkles className="w-6 h-6 text-cyan-400" />
+              <Sparkles className="w-6 h-6 text-brand-blue" />
             </motion.div>
-            <h3 className="text-lg font-bold text-white">Application Progress</h3>
+            <h3 className="text-lg font-bold text-slate-900">Application Progress</h3>
           </div>
-          <div className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">
+          <div className="text-sm font-bold gradient-text">
             {Math.round((currentStage / (stages.length - 1)) * 100)}% Complete
           </div>
         </div>
@@ -54,12 +54,12 @@ const LoanProgress = ({ currentStage, isRejected }) => {
                   className="relative"
                 >
                   <motion.div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500 shadow-xl relative overflow-hidden ${isRejected && index === 4 ? 'bg-gradient-to-br from-red-500 to-rose-600' : isRejected && index > 4 ? 'bg-white/5 backdrop-blur-sm border-2 border-white/10' : index <= currentStage && currentStage === 5 && index === 5 ? 'bg-gradient-to-br from-green-500 to-emerald-600' : index < currentStage ? 'bg-gradient-to-br from-cyan-500 to-blue-600' : index === currentStage ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-white/5 backdrop-blur-sm border-2 border-white/10'}`}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500 shadow-xl relative overflow-hidden ${isRejected && index === 4 ? 'bg-gradient-to-br from-red-500 to-rose-600' : isRejected && index > 4 ? 'bg-white/5 backdrop-blur-sm border-2 border-white/10' : index <= currentStage && currentStage === 5 && index === 5 ? 'bg-gradient-to-br from-green-500 to-emerald-600' : index < currentStage ? 'bg-gradient-to-br from-brand-blue to-brand-red' : index === currentStage ? 'bg-gradient-to-br from-brand-blue to-brand-red' : 'bg-white/5 backdrop-blur-sm border-2 border-white/10'}`}
                     animate={index === currentStage ? {
                       boxShadow: [
-                        '0 0 20px rgba(168, 85, 247, 0.6)',
-                        '0 0 40px rgba(168, 85, 247, 0.8)',
-                        '0 0 20px rgba(168, 85, 247, 0.6)'
+                        '0 0 20px rgba(11,79,130,0.45)',
+                        '0 0 40px rgba(200,16,46,0.35)',
+                        '0 0 20px rgba(11,79,130,0.3)'
                       ],
                       scale: [1, 1.05, 1]
                     } : {}}
@@ -92,7 +92,7 @@ const LoanProgress = ({ currentStage, isRejected }) => {
                   {/* Pulsing ring for current stage */}
                   {index === currentStage && !isRejected && (
                     <motion.div
-                      className="absolute inset-0 rounded-xl border-2 border-purple-400"
+                      className="absolute inset-0 rounded-xl border-2 border-brand-blue"
                       animate={{
                         scale: [1, 1.3, 1],
                         opacity: [0.8, 0, 0.8]
@@ -126,7 +126,7 @@ const LoanProgress = ({ currentStage, isRejected }) => {
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: (index < currentStage && !(isRejected && index >= 4)) ? 1 : 0 }}
                     transition={{ duration: 0.8, delay: index * 0.2, ease: "easeInOut" }}
-                    className={`absolute inset-0 rounded-full origin-left ${isRejected && index >= 4 ? 'bg-gradient-to-r from-red-500 to-rose-600' : 'bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500'}`}
+                    className={`absolute inset-0 rounded-full origin-left ${isRejected && index >= 4 ? 'bg-gradient-to-r from-red-500 to-rose-600' : 'bg-gradient-to-r from-brand-blue to-brand-red'}`}
                     style={{ transformOrigin: 'left' }}
                   />
                   
@@ -147,13 +147,13 @@ const LoanProgress = ({ currentStage, isRejected }) => {
 
         {/* Animated Progress Bar */}
         <div className="space-y-1.5">
-          <div className="flex justify-between text-[10px] font-semibold">
-            <span className="text-white/70">Overall Progress</span>
+            <div className="flex justify-between text-[10px] font-semibold">
+            <span className="text-slate-700">Overall Progress</span>
             <motion.span
               key={currentStage}
               initial={{ scale: 1.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400"
+              className="gradient-text"
             >
               {Math.round((currentStage / (stages.length - 1)) * 100)}%
             </motion.span>
@@ -164,11 +164,12 @@ const LoanProgress = ({ currentStage, isRejected }) => {
               initial={{ width: 0 }}
               animate={{ width: `${(currentStage / (stages.length - 1)) * 100}%` }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className={`h-full rounded-full relative overflow-hidden ${isRejected ? 'bg-gradient-to-r from-red-500 to-rose-600' : 'bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500'}`}
+              className={`h-full rounded-full relative overflow-hidden ${isRejected ? 'bg-gradient-to-r from-red-500 to-rose-600' : 'bg-gradient-to-r from-brand-blue to-brand-red'}`}
             >
               {/* Shimmer effect on progress bar */}
               <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                className="absolute inset-0"
+                style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)' }}
                 animate={{ x: ['-200%', '200%'] }}
                 transition={{ duration: 2, repeat: Infinity, repeatDelay: 0.5 }}
               />

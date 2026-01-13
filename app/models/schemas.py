@@ -33,6 +33,7 @@ class ChatStage(str, Enum):
     GREETING = "greeting"
     SALES = "sales"
     VERIFICATION = "verification"
+    ESCALATED = "escalated"
     UNDERWRITING = "underwriting"
     SALARY_SLIP = "salary_slip"
     DECISION = "decision"

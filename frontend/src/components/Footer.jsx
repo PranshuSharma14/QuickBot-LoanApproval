@@ -7,7 +7,7 @@ const Footer = () => {
     { icon: Facebook, href: '#', color: 'hover:text-blue-400', label: 'Facebook' },
     { icon: Twitter, href: '#', color: 'hover:text-sky-400', label: 'Twitter' },
     { icon: Linkedin, href: '#', color: 'hover:text-blue-500', label: 'LinkedIn' },
-    { icon: Instagram, href: '#', color: 'hover:text-pink-400', label: 'Instagram' },
+    { icon: Instagram, href: '#', color: 'hover:text-[#c8102e]', label: 'Instagram' },
   ]
 
   const quickLinks = [
@@ -32,7 +32,7 @@ const Footer = () => {
       className="relative backdrop-blur-xl bg-white/5 border-t border-white/10 mt-4"
     >
       {/* Animated top border */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, var(--brand-blue), transparent)' }} />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Compact footer content */}
@@ -44,7 +44,7 @@ const Footer = () => {
             transition={{ delay: 0.9 }}
             className="flex items-center space-x-4"
           >
-            <h3 className="text-lg font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+            <h3 className="text-lg font-bold gradient-text">
               QuickLoan AI
             </h3>
             <div className="flex space-x-2">
@@ -112,7 +112,8 @@ const Footer = () => {
 
         {/* Disclaimer */}
         <motion.div 
-          className="mt-3 p-2 rounded-xl bg-gradient-to-r from-purple-500/10 via-cyan-500/10 to-purple-500/10 border border-white/10"
+          className="mt-3 p-2 rounded-xl border border-white/10"
+          style={{ background: 'linear-gradient(90deg, rgba(11,79,130,0.04), rgba(200,16,46,0.03))' }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.2 }}
@@ -128,10 +129,11 @@ const Footer = () => {
         {[...Array(5)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-2 h-2 bg-purple-500/30 rounded-full"
+            className="absolute w-2 h-2 rounded-full"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
+              background: i % 2 === 0 ? 'rgba(11,79,130,0.18)' : 'rgba(200,16,46,0.14)'
             }}
             animate={{
               y: [-20, 20],

@@ -30,6 +30,12 @@ export default {
           700: '#047857',
           800: '#065f46',
           900: '#064e3b',
+        },
+        brand: {
+          blue: '#0b4f82',
+          blueDark: '#083955',
+          red: '#c8102e',
+          white: '#ffffff'
         }
       },
       fontFamily: {

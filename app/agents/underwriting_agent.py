@@ -125,10 +125,11 @@ class UnderwritingAgent(BaseAgent):
 
         if result.approved:
             # Generate sanction letter immediately upon approval
+            sanction_letter_path = None
             try:
                 from app.services.pdf_service import PDFService
                 pdf_service = PDFService()
-                sanction_letter = await pdf_service.generate_sanction_letter(
+                sanction_letter_path = await pdf_service.generate_sanction_letter(
                     customer_data=context.customer_data,
                     loan_details=result,
                     session_id=context.session_id
@@ -138,12 +139,53 @@ class UnderwritingAgent(BaseAgent):
                 print(f"Error generating sanction letter: {e}")
                 pdf_status = "⚠️ Sanction letter will be emailed to you shortly."
 
+            # Update loan status in database
+            try:
+                from app.database.postgres_models import get_postgres_db
+                from app.api.dashboard import update_loan_status_internal
+                
+                db = next(get_postgres_db())
+                update_loan_status_internal(
+                    db=db,
+                    session_id=context.session_id,
+                    phone=context.customer_phone,
+                    status="approved",
+                    loan_amount=float(result.loan_amount),
+                    approved_amount=float(result.loan_amount),
+                    interest_rate=float(result.interest_rate),
+                    tenure_months=result.tenure,
+                    emi_amount=float(result.emi),
+                    credit_score=credit_result.credit_score,
+                    sanction_letter_path=sanction_letter_path
+                )
+            except Exception as e:
+                print(f"Error updating loan status in database: {e}")
+
             # Calculate comprehensive loan details
             total_repayment = result.emi * result.tenure
             total_interest = total_repayment - result.loan_amount
             processing_fee = result.loan_amount * 0.02  # 2% processing fee
             first_emi_date = "15th of next month"
             loan_account_number = f"QL{context.session_id[:8].upper()}"
+
+            # Build metadata for celebration screen
+            loan_metadata = {
+                "customer_name": customer_name,
+                "loan_amount": result.loan_amount,
+                "tenure": result.tenure,
+                "interest_rate": result.interest_rate,
+                "emi": result.emi,
+                "total_interest": total_interest,
+                "total_repayment": total_repayment,
+                "processing_fee": processing_fee,
+                "loan_account_number": loan_account_number,
+                "first_emi_date": first_emi_date,
+                "credit_score": credit_result.credit_score,
+                "score_band": credit_result.score_band,
+                "pre_approved_limit": context.pre_approved_limit,
+                "purpose": context.loan_request.purpose.value if context.loan_request.purpose else "personal",
+                "approved": True
+            }
 
             # Instant approval with comprehensive details
             return self._generate_response(
@@ -197,7 +239,8 @@ class UnderwritingAgent(BaseAgent):
                        f"Thank you for choosing QuickLoan! Your financial partner for life. 🙏",
                 stage=ChatStage.COMPLETED,
                 requires_input=False,
-                final=True
+                final=True,
+                metadata=loan_metadata
             )
 
         elif result.requires_salary_slip:
@@ -219,6 +262,24 @@ class UnderwritingAgent(BaseAgent):
         else:
             # Rejection
             rejection_suggestions = self._get_rejection_suggestions(result, context)
+
+            # Update loan status in database to rejected
+            try:
+                from app.database.postgres_models import get_postgres_db
+                from app.api.dashboard import update_loan_status_internal
+                
+                db = next(get_postgres_db())
+                update_loan_status_internal(
+                    db=db,
+                    session_id=context.session_id,
+                    phone=context.customer_phone,
+                    status="rejected",
+                    loan_amount=float(result.loan_amount) if result.loan_amount else None,
+                    credit_score=context.credit_score,
+                    rejection_reason=result.reason
+                )
+            except Exception as e:
+                print(f"Error updating loan status in database: {e}")
 
             return self._generate_response(
                 session_id=context.session_id,
@@ -269,10 +330,11 @@ class UnderwritingAgent(BaseAgent):
             result.reason = f"Approved after salary verification. EMI (₹{result.emi:,.0f}) is {(result.emi/salary*100):.1f}% of salary."
 
             # Generate sanction letter immediately upon approval
+            sanction_letter_path = None
             try:
                 from app.services.pdf_service import PDFService
                 pdf_service = PDFService()
-                sanction_letter = await pdf_service.generate_sanction_letter(
+                sanction_letter_path = await pdf_service.generate_sanction_letter(
                     customer_data=context.customer_data,
                     loan_details=result,
                     session_id=context.session_id
@@ -281,6 +343,28 @@ class UnderwritingAgent(BaseAgent):
             except Exception as e:
                 print(f"Error generating sanction letter: {e}")
                 pdf_status = "⚠️ Sanction letter will be emailed to you shortly."
+
+            # Update loan status in database
+            try:
+                from app.database.postgres_models import get_postgres_db
+                from app.api.dashboard import update_loan_status_internal
+                
+                db = next(get_postgres_db())
+                update_loan_status_internal(
+                    db=db,
+                    session_id=context.session_id,
+                    phone=context.customer_phone,
+                    status="approved",
+                    loan_amount=float(result.loan_amount),
+                    approved_amount=float(result.loan_amount),
+                    interest_rate=float(result.interest_rate),
+                    tenure_months=result.tenure,
+                    emi_amount=float(result.emi),
+                    credit_score=context.credit_score,
+                    sanction_letter_path=sanction_letter_path
+                )
+            except Exception as e:
+                print(f"Error updating loan status in database: {e}")
 
             customer_name = context.customer_data.get('name', 'Customer')
 
@@ -355,6 +439,24 @@ class UnderwritingAgent(BaseAgent):
             max_loan_amount = (max_allowed_emi * (((1 + (result.interest_rate / (12 * 100))) ** result.tenure) - 1)) / ((result.interest_rate / (12 * 100)) * ((1 + (result.interest_rate / (12 * 100))) ** result.tenure))
 
             customer_name = context.customer_data.get('name', 'Customer')
+
+            # Update loan status in database to rejected
+            try:
+                from app.database.postgres_models import get_postgres_db
+                from app.api.dashboard import update_loan_status_internal
+                
+                db = next(get_postgres_db())
+                update_loan_status_internal(
+                    db=db,
+                    session_id=context.session_id,
+                    phone=context.customer_phone,
+                    status="rejected",
+                    loan_amount=float(result.loan_amount) if result.loan_amount else None,
+                    credit_score=context.credit_score,
+                    rejection_reason=result.reason
+                )
+            except Exception as e:
+                print(f"Error updating loan status in database: {e}")
 
             return self._generate_response(
                 session_id=context.session_id,

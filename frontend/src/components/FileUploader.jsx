@@ -34,7 +34,8 @@ const FileUploader = ({ onUpload }) => {
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-          className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-2xl"
+          className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-2xl"
+          style={{ background: 'linear-gradient(90deg, var(--brand-blue), var(--brand-red))' }}
         >
           <FileText className="w-8 h-8 text-white" strokeWidth={2.5} />
         </motion.div>
@@ -64,18 +65,18 @@ const FileUploader = ({ onUpload }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
         {...getRootProps()}
-        className={`
+          className={`
           relative border-3 border-dashed rounded-3xl p-12 text-center cursor-pointer transition-all duration-300 backdrop-blur-xl overflow-hidden group
           ${isDragActive && !isDragReject 
-            ? 'border-cyan-400 bg-cyan-500/20 shadow-2xl scale-105' 
+            ? 'border-brand-blue bg-brand-blue/10 shadow-2xl scale-105' 
             : isDragReject 
-              ? 'border-red-400 bg-red-500/20 shadow-2xl'
-              : 'border-white/30 bg-white/5 hover:border-purple-400 hover:bg-white/10 hover:shadow-2xl hover:scale-102'
+              ? 'border-red-400 bg-red-50 shadow-2xl'
+              : 'border-white/30 bg-white/5 hover:border-brand-blue hover:bg-white/10 hover:shadow-2xl hover:scale-102'
           }
         `}
       >
         {/* Animated background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: 'linear-gradient(135deg, rgba(11,79,130,0.04), transparent, rgba(200,16,46,0.03))' }} />
         
         <input {...getInputProps()} />
         
@@ -95,15 +96,12 @@ const FileUploader = ({ onUpload }) => {
             } : {}}
             transition={{ duration: 0.6, repeat: isDragActive ? Infinity : 0 }}
           >
-            {isDragReject ? (
+                {isDragReject ? (
               <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-6" strokeWidth={2} />
             ) : (
               <motion.div
-                className={`w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center shadow-2xl ${
-                  isDragActive 
-                    ? 'bg-gradient-to-br from-cyan-500 to-blue-600' 
-                    : 'bg-gradient-to-br from-purple-500 to-cyan-500'
-                }`}
+                className={`w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center shadow-2xl`}
+                style={{ background: 'linear-gradient(90deg, var(--brand-blue), var(--brand-red))' }}
                 whileHover={{ rotate: 360 }}
                 transition={{ duration: 0.6 }}
               >
@@ -118,8 +116,8 @@ const FileUploader = ({ onUpload }) => {
               isDragReject 
                 ? 'text-red-400' 
                 : isDragActive 
-                  ? 'text-cyan-300' 
-                  : 'text-white'
+                  ? 'text-brand-blue' 
+                  : 'text-slate-900'
             }`}>
               {isDragReject 
                 ? '❌ Invalid File Type' 
@@ -129,9 +127,9 @@ const FileUploader = ({ onUpload }) => {
               }
             </p>
             
-            <p className="text-base text-white/70">
+              <p className="text-base text-slate-700">
               or{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 font-bold">
+              <span className="text-transparent bg-clip-text gradient-text font-bold">
                 click to browse
               </span>
             </p>
@@ -139,9 +137,9 @@ const FileUploader = ({ onUpload }) => {
             {/* Supported formats */}
             <div className="flex items-center justify-center space-x-6 mt-6 pt-6 border-t border-white/10">
               {[
-                { icon: '📄', label: 'PDF', color: 'from-red-400 to-pink-500' },
-                { icon: '🖼️', label: 'JPG', color: 'from-blue-400 to-cyan-500' },
-                { icon: '🎨', label: 'PNG', color: 'from-purple-400 to-pink-500' }
+                { icon: '📄', label: 'PDF', color: 'from-brand-blue to-brand-red' },
+                { icon: '🖼️', label: 'JPG', color: 'from-brand-blue to-brand-red' },
+                { icon: '🎨', label: 'PNG', color: 'from-brand-blue to-brand-red' }
               ].map((format, idx) => (
                 <motion.div
                   key={idx}
@@ -150,7 +148,7 @@ const FileUploader = ({ onUpload }) => {
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <span className="text-2xl">{format.icon}</span>
-                  <span className="text-sm font-bold text-white">{format.label}</span>
+                  <span className="text-sm font-bold text-slate-900">{format.label}</span>
                 </motion.div>
               ))}
             </div>
@@ -162,10 +160,10 @@ const FileUploader = ({ onUpload }) => {
         </motion.div>
 
         {/* Decorative corner elements */}
-        <div className="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-purple-400/50 rounded-tl-2xl" />
-        <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-cyan-400/50 rounded-tr-2xl" />
-        <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-cyan-400/50 rounded-bl-2xl" />
-        <div className="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2 border-purple-400/50 rounded-br-2xl" />
+        <div className="absolute top-4 left-4 w-8 h-8 rounded-tl-2xl" style={{ borderTopWidth: 2, borderLeftWidth: 2, borderTopColor: 'rgba(11,79,130,0.14)', borderLeftColor: 'rgba(11,79,130,0.14)' }} />
+        <div className="absolute top-4 right-4 w-8 h-8 rounded-tr-2xl" style={{ borderTopWidth: 2, borderRightWidth: 2, borderTopColor: 'rgba(200,16,46,0.12)', borderRightColor: 'rgba(200,16,46,0.12)' }} />
+        <div className="absolute bottom-4 left-4 w-8 h-8 rounded-bl-2xl" style={{ borderBottomWidth: 2, borderLeftWidth: 2, borderBottomColor: 'rgba(11,79,130,0.12)', borderLeftColor: 'rgba(11,79,130,0.12)' }} />
+        <div className="absolute bottom-4 right-4 w-8 h-8 rounded-br-2xl" style={{ borderBottomWidth: 2, borderRightWidth: 2, borderBottomColor: 'rgba(200,16,46,0.12)', borderRightColor: 'rgba(200,16,46,0.12)' }} />
       </motion.div>
 
       {/* Security note */}
@@ -173,20 +171,21 @@ const FileUploader = ({ onUpload }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="mt-6 p-5 rounded-2xl backdrop-blur-xl bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-400/30"
+        className="mt-6 p-5 rounded-2xl backdrop-blur-xl border"
+        style={{ background: 'linear-gradient(90deg, rgba(11,79,130,0.04), rgba(200,16,46,0.02))', borderColor: 'rgba(11,79,130,0.08)' }}
       >
         <div className="flex items-start space-x-4">
-          <motion.div
+            <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
             className="flex-shrink-0"
           >
-            <Shield className="w-6 h-6 text-green-400" />
+            <Shield className="w-6 h-6" style={{ color: 'var(--brand-blue)' }} />
           </motion.div>
           <div className="flex-1">
-            <div className="flex items-center space-x-2 mb-2">
-              <CheckCircle className="w-4 h-4 text-green-400" />
-              <p className="font-bold text-green-300 text-sm">Bank-Grade Security</p>
+              <div className="flex items-center space-x-2 mb-2">
+              <CheckCircle className="w-4 h-4" style={{ color: 'var(--brand-blue)' }} />
+              <p className="font-bold" style={{ color: 'var(--brand-blue)' }}>Bank-Grade Security</p>
             </div>
             <p className="text-sm text-white/70 leading-relaxed">
               Your document is encrypted and processed securely. We only extract salary information for eligibility assessment and delete the file immediately after verification.

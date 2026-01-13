@@ -1,14 +1,49 @@
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.so
+venv/
 .venv/
+*.egg-info/
 
-# Node
+# Node.js
 node_modules/
+npm-debug.log*
+
+# Build
 .vite/
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Environment
+.env
+frontend/.env
 
 # Database
 *.db
+*.sqlite3
 
-# Env
-.env
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads & Generated (keep folder structure only)
+uploads/*
+generated/*
+!uploads/.gitkeep
+!uploads/aadhaar_cards/
+!uploads/income_certificates/
+uploads/aadhaar_cards/*
+uploads/income_certificates/*
+!uploads/aadhaar_cards/.gitkeep
+!uploads/income_certificates/.gitkeep
+!generated/.gitkeep

@@ -41,9 +41,9 @@ const ChatMessage = ({ message, index, onOptionClick }) => {
     // Highlight salary slip request
     if (text.includes('salary slip') || text.includes('verify your current salary')) {
       return text.split('\n').map((line, i) => {
-        if (line.includes('salary slip') || line.includes('verify your current salary')) {
+          if (line.includes('salary slip') || line.includes('verify your current salary')) {
           return (
-            <div key={i} className="text-lg font-bold text-cyan-300 mb-2 bg-cyan-500/20 px-3 py-2 rounded-lg border-l-4 border-cyan-400">
+            <div key={i} className="text-lg font-bold mb-2 px-3 py-2 rounded-lg" style={{ background: 'rgba(11,79,130,0.06)', borderLeft: '4px solid rgba(11,79,130,0.18)', color: 'var(--brand-blue)' }}>
               {line}
             </div>
           )
@@ -73,15 +73,16 @@ const ChatMessage = ({ message, index, onOptionClick }) => {
           <motion.div
             className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-2xl ${
               isUser 
-                ? 'bg-gradient-to-br from-purple-500 to-cyan-500' 
+                ? '' 
                 : isError 
-                  ? 'bg-gradient-to-br from-red-500 to-rose-600' 
-                  : 'bg-gradient-to-br from-indigo-500 to-purple-500'
+                  ? '' 
+                  : ''
             }`}
+            style={{ background: isError ? 'linear-gradient(90deg, #c8102e, #ff6b6b)' : 'linear-gradient(90deg, var(--brand-blue), var(--brand-red))' }}
             animate={{
               boxShadow: isUser
-                ? ['0 0 20px rgba(168, 85, 247, 0.4)', '0 0 30px rgba(168, 85, 247, 0.6)', '0 0 20px rgba(168, 85, 247, 0.4)']
-                : ['0 0 20px rgba(99, 102, 241, 0.4)', '0 0 30px rgba(99, 102, 241, 0.6)', '0 0 20px rgba(99, 102, 241, 0.4)']
+                ? ['0 0 20px rgba(11,79,130,0.25)', '0 0 30px rgba(200,16,46,0.22)', '0 0 20px rgba(11,79,130,0.25)']
+                : ['0 0 20px rgba(11,79,130,0.2)', '0 0 30px rgba(11,79,130,0.3)', '0 0 20px rgba(11,79,130,0.2)']
             }}
             transition={{ duration: 2, repeat: Infinity }}
           >
@@ -96,17 +97,18 @@ const ChatMessage = ({ message, index, onOptionClick }) => {
         </motion.div>
 
         {/* Message Bubble with glassmorphism */}
-        <motion.div
+          <motion.div
           initial={{ scale: 0.8, opacity: 0, x: isUser ? 20 : -20 }}
           animate={{ scale: 1, opacity: 1, x: 0 }}
           transition={{ delay: index * 0.1 + 0.3, type: "spring", stiffness: 100 }}
           className={`relative px-5 py-4 rounded-2xl shadow-2xl backdrop-blur-xl ${
             isUser 
-              ? 'bg-gradient-to-br from-purple-500 to-cyan-500 text-white rounded-br-md border border-white/20' 
+              ? '' 
               : isError 
                 ? 'bg-red-500/20 border border-red-400/50 text-red-100 rounded-bl-md backdrop-blur-xl'
-                : 'bg-white/10 border border-white/20 text-white rounded-bl-md'
+                : 'bg-white/95 border border-white/20 text-slate-900 rounded-bl-md'
           }`}
+          style={isUser ? { background: 'linear-gradient(90deg, var(--brand-blue), var(--brand-red))', color: 'white', borderColor: 'rgba(255,255,255,0.12)' } : {}}
         >
           {/* Message Text */}
           <div className={`whitespace-pre-wrap text-base leading-relaxed ${isUser ? 'text-white' : ''}`}>
@@ -124,7 +126,7 @@ const ChatMessage = ({ message, index, onOptionClick }) => {
                   transition={{ delay: 0.5 + idx * 0.1 }}
                   whileHover={{ scale: 1.02, x: 5 }}
                   whileTap={{ scale: 0.98 }}
-                  className="relative group block w-full text-left px-5 py-4 bg-gradient-to-r from-purple-500/30 to-cyan-500/30 hover:from-purple-500/50 hover:to-cyan-500/50 rounded-xl text-base font-semibold text-white transition-all duration-300 border-2 border-white/30 hover:border-white/60 hover:shadow-xl backdrop-blur-xl cursor-pointer overflow-hidden"
+                  className="relative group block w-full text-left px-5 py-4 rounded-xl text-base font-semibold transition-all duration-300 border-2 border-white/30 hover:border-white/60 hover:shadow-xl backdrop-blur-xl cursor-pointer overflow-hidden"
                   onClick={() => {
                     if (onOptionClick) {
                       onOptionClick(option)
@@ -132,7 +134,7 @@ const ChatMessage = ({ message, index, onOptionClick }) => {
                   }}
                 >
                   {/* Hover glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-400/0 via-cyan-400/20 to-purple-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(90deg, rgba(11,79,130,0), rgba(11,79,130,0.12), rgba(200,16,46,0))' }} />
                   
                   <span className="relative z-10 flex items-center justify-between">
                     <span>{option}</span>

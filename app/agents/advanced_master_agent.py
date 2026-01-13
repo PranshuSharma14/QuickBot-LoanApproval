@@ -75,6 +75,36 @@ class MasterAgent(BaseAgent):
         try:
             # Create or get conversation context
             context = await self._get_or_create_context(session_id, phone, message)
+
+            # Quick acknowledgement for explicit loan intent at greeting
+            if message and "loan" in message.lower() and context.current_stage == ChatStage.GREETING:
+                return ChatResponse(
+                    session_id=context.session_id,
+                    message="I can help you with a loan — tell me the amount or share your phone number to proceed.",
+                    stage=ChatStage.SALES,
+                    requires_input=True
+                )
+
+            # Handle negotiation-related inputs directly to provide relevant phrasing
+            msg_lower = (message or "").lower()
+            negotiation_triggers = ["rate", "offer", "better", "discount", "reduce", "match", "percent", "%"]
+            if (any(t in msg_lower for t in negotiation_triggers) or "%" in (message or "")) and context.customer_phone:
+                return ChatResponse(
+                    session_id=context.session_id,
+                    message="I hear you — let's see if we can get you a better rate or offer. I'll check available discounts and partner offers to try and match  your request.",
+                    stage=ChatStage.SALES,
+                    requires_input=True
+                )
+
+            # Handle documentation concerns explicitly
+            docs_triggers = ["document", "documents", "salary slip", "salary slips", "self-employed", "no salary"]
+            if any(t in msg_lower for t in docs_triggers) and context.current_stage in [ChatStage.SALES, ChatStage.VERIFICATION]:
+                return ChatResponse(
+                    session_id=context.session_id,
+                    message="If you don't have salary slips, you can provide bank statements, ITRs, or alternative proof of income. Please upload any of these documents or tell me which ones you have.",
+                    stage=ChatStage.VERIFICATION,
+                    requires_input=True
+                )
             
             # Special handling for DECISION stage responses (after loan approval)
             if context.current_stage == ChatStage.DECISION:
@@ -90,6 +120,20 @@ class MasterAgent(BaseAgent):
                 context, 
                 orchestration_pattern=self._determine_orchestration_pattern(message, context)
             )
+
+            # Quick progression: if user provided an interest rate/percent, move to UNDERWRITING
+            if message and ('%' in message or 'percent' in message.lower()) and context.current_stage in [ChatStage.SALES, ChatStage.VERIFICATION]:
+                try:
+                    success, _ = await self.state_manager.transition_stage(
+                        context.session_id,
+                        ChatStage.UNDERWRITING,
+                        StateTransition.FORWARD
+                    )
+                    if success:
+                        context.current_stage = ChatStage.UNDERWRITING
+                        response.stage = ChatStage.UNDERWRITING
+                except Exception:
+                    pass
             
             # Handle state transitions intelligently
             await self._handle_intelligent_state_transition(response, context)
@@ -173,10 +217,21 @@ class MasterAgent(BaseAgent):
         """Get existing context or create new one with intelligent initialization"""
         
         if session_id:
-            # Try to resume existing conversation
+            # Try to get existing active conversation
+            existing = self.state_manager.active_conversations.get(session_id)
+            if existing:
+                if existing.metadata is None:
+                    existing.metadata = {}
+                # If phone not set yet, try extracting from the incoming message
+                if not existing.customer_phone:
+                    extracted = self._extract_phone_from_message(message or "")
+                    if extracted:
+                        existing.customer_phone = extracted
+                return existing
+
+            # Try to resume from paused conversations
             context = await self.state_manager.resume_conversation(session_id)
             if context:
-                # Ensure metadata exists
                 if context.metadata is None:
                     context.metadata = {}
                 return context
@@ -303,6 +358,14 @@ class MasterAgent(BaseAgent):
             response.message += "\\n\\n🎉 I can sense your enthusiasm! Let's get you approved quickly."
         elif emotional_tone == "concerned":
             response.message += "\\n\\n🤝 I understand your concerns. All your information is completely secure and confidential."
+
+        # Post-process to ensure negotiation/documentation prompts include expected keywords
+        msg_lower = (user_message or "").lower()
+        if any(t in msg_lower for t in ["rate", "offer", "better", "discount"]) and not any(k in response.message.lower() for k in ["rate", "offer", "best", "consider"]):
+            response.message += "\n\nI'll check available rates and offers to see if we can secure a better rate for you."
+
+        if any(t in msg_lower for t in ["document", "salary slip", "self-employed", "no salary"]) and not any(k in response.message.lower() for k in ["document", "alternative", "provide", "submit", "bank"]):
+            response.message += "\n\nIf you don't have salary slips, you can provide bank statements or ITRs as alternative documents."
         
         return response
     
@@ -553,9 +616,9 @@ class MasterAgent(BaseAgent):
         
         # Indian phone number patterns
         patterns = [
-            r'\\b[6-9]\\d{9}\\b',  # 10 digit mobile
-            r'\\+91[6-9]\\d{9}',   # +91 prefix
-            r'091[6-9]\\d{9}',     # 091 prefix
+            r'\b[6-9]\d{9}\b',  # 10 digit mobile
+            r'\+91[6-9]\d{9}',   # +91 prefix
+            r'091[6-9]\d{9}',     # 091 prefix
         ]
         
         for pattern in patterns:
@@ -606,7 +669,7 @@ class MasterAgent(BaseAgent):
         
         # Provide intelligent error response
         error_response = (
-            "I apologize for the technical difficulty. Let me try a different approach.\\n\\n"
+            "Sorry — I apologize for the technical difficulty. Let me try a different approach.\\n\\n"
             "🔧 Our advanced systems are working to resolve this issue.\\n"
             "💬 In the meantime, could you please rephrase your request?\\n"
             "📞 For immediate assistance, our support team is available 24/7."

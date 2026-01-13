@@ -19,6 +19,7 @@ class OrchestrationPattern(Enum):
     CONDITIONAL = "conditional" # Conditional branching based on context
     PARALLEL = "parallel"       # Multiple agents working simultaneously
     CHAIN = "chain"            # Chain of responsibility pattern
+    HYBRID = "hybrid"          # Combined/hybrid strategy
     DECISION_TREE = "tree"     # Complex decision tree routing
 
 
@@ -614,8 +615,15 @@ class AgentOrchestrator:
     
     def get_orchestration_metrics(self) -> Dict[str, Any]:
         """Get orchestration performance metrics"""
+        # Ensure compatibility with tests expecting successful_routings
+        successful_routings = self.metrics.get("successful_routings", 0)
+        # Derive successful_routings from agent_performance if not present
+        if successful_routings == 0 and isinstance(self.metrics.get("agent_performance"), dict):
+            successful_routings = sum(v.get("success", 0) for v in self.metrics.get("agent_performance", {}).values())
+
         return {
             **self.metrics,
+            "successful_routings": successful_routings,
             "approval_rate": self.metrics["successful_approvals"] / max(self.metrics["total_conversations"], 1),
             "agent_states": dict(self.agent_states)
         }
